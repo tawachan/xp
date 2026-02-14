@@ -22,7 +22,7 @@ Usage:
   xp thread <text1> <text2> ...      Post a thread
   xp reply <tweet_id> <text>         Reply to a tweet
   xp get <tweet_id>                  Fetch a tweet by ID
-  xp me [limit]                      List your recent tweets (default: 10)
+  xp me [--limit N]                   List your recent tweets (default: 10)
   xp me --before <tweet_id>          Fetch tweets older than the given ID
   xp me --after <tweet_id>           Fetch tweets newer than the given ID
   xp delete <tweet_id>               Delete a tweet
@@ -60,9 +60,9 @@ Examples:
   xp thread "First tweet" "Second tweet" "Third tweet"
   xp reply 1234567890123456789 "Great thread!"
   xp get 1234567890123456789 --json
-  xp me 20
+  xp me --limit 20
   xp me --before 1234567890123456789
-  xp me --after 1234567890123456789
+  xp me --limit 20 --before 1234567890123456789
   xp me --json
   xp delete 1234567890123456789
 `;
@@ -131,8 +131,11 @@ async function main(): Promise<void> {
         } else if (meArgs[i] === "--after") {
           afterId = meArgs[++i];
           if (!afterId) throw new Error("Tweet ID is required: xp me --after <tweet_id>");
+        } else if (meArgs[i] === "--limit") {
+          limit = meArgs[++i];
+          if (!limit) throw new Error("Number is required: xp me --limit <N>");
         } else {
-          limit = meArgs[i];
+          throw new Error(`Unknown argument: ${meArgs[i]}\nUsage: xp me [--limit N] [--before <id>] [--after <id>]`);
         }
       }
       await meCommand({ limit, beforeId, afterId, json: jsonFlag });

@@ -21,6 +21,7 @@ complete -c xp -n '__fish_seen_subcommand_from auth' -a login -d 'Authenticate v
 complete -c xp -n '__fish_seen_subcommand_from auth' -a logout -d 'Remove saved credentials'
 
 # me flags
+complete -c xp -n '__fish_seen_subcommand_from me' -l limit -d 'Number of tweets to fetch'
 complete -c xp -n '__fish_seen_subcommand_from me' -l before -d 'Fetch tweets older than this ID'
 complete -c xp -n '__fish_seen_subcommand_from me' -l after -d 'Fetch tweets newer than this ID'
 
@@ -59,7 +60,7 @@ _xp() {
             COMPREPLY=( $(compgen -W "login logout" -- "\${cur}") )
             ;;
         me)
-            COMPREPLY=( $(compgen -W "--before --after" -- "\${cur}") )
+            COMPREPLY=( $(compgen -W "--limit --before --after" -- "\${cur}") )
             ;;
         cache)
             COMPREPLY=( $(compgen -W "list show clear" -- "\${cur}") )
@@ -113,7 +114,7 @@ _xp() {
                     _values 'subcommand' 'login[Authenticate via browser]' 'logout[Remove saved credentials]'
                     ;;
                 me)
-                    _arguments '--before[Fetch tweets older than this ID]:tweet_id:' '--after[Fetch tweets newer than this ID]:tweet_id:'
+                    _arguments '--limit[Number of tweets to fetch]:count:' '--before[Fetch tweets older than this ID]:tweet_id:' '--after[Fetch tweets newer than this ID]:tweet_id:'
                     ;;
                 cache)
                     _values 'subcommand' 'list[List cached tweets]' 'show[Show a cached tweet]' 'clear[Clear all cached tweets]'

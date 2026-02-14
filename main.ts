@@ -8,6 +8,7 @@ import { configSetCommand, configShowCommand } from "./commands/config.ts";
 import { authLoginCommand, authLogoutCommand } from "./commands/auth.ts";
 import { completionsCommand } from "./commands/completions.ts";
 import { upgradeCommand } from "./commands/upgrade.ts";
+import { cacheListCommand, cacheShowCommand, cacheClearCommand } from "./commands/cache.ts";
 import { formatError } from "./lib/output.ts";
 import denoConfig from "./deno.json" with { type: "json" };
 
@@ -21,8 +22,13 @@ Usage:
   xp thread <text1> <text2> ...      Post a thread
   xp reply <tweet_id> <text>         Reply to a tweet
   xp get <tweet_id>                  Fetch a tweet by ID
-  xp me [limit]                      List your recent tweets (default: 10)
+  xp me [--limit N]                   List your recent tweets (default: 10)
+  xp me --before <tweet_id>          Fetch tweets older than the given ID
+  xp me --after <tweet_id>           Fetch tweets newer than the given ID
   xp delete <tweet_id>               Delete a tweet
+  xp cache list                      List cached tweets
+  xp cache show <tweet_id>           Show a cached tweet
+  xp cache clear                     Clear all cached tweets
   xp auth login                      Authenticate via browser (OAuth PIN flow)
   xp auth logout                     Remove saved credentials
   xp config set [flags]              Set API credentials
@@ -54,7 +60,9 @@ Examples:
   xp thread "First tweet" "Second tweet" "Third tweet"
   xp reply 1234567890123456789 "Great thread!"
   xp get 1234567890123456789 --json
-  xp me 20
+  xp me --limit 20
+  xp me --before 1234567890123456789
+  xp me --limit 20 --before 1234567890123456789
   xp me --json
   xp delete 1234567890123456789
 `;
@@ -111,15 +119,48 @@ async function main(): Promise<void> {
       await getCommand(args[1], jsonFlag);
       break;
 
-    case "me":
-      await meCommand(args[1], jsonFlag);
+    case "me": {
+      const meArgs = args.slice(1);
+      let beforeId: string | undefined;
+      let afterId: string | undefined;
+      let limit: string | undefined;
+      for (let i = 0; i < meArgs.length; i++) {
+        if (meArgs[i] === "--before") {
+          beforeId = meArgs[++i];
+          if (!beforeId) throw new Error("Tweet ID is required: xp me --before <tweet_id>");
+        } else if (meArgs[i] === "--after") {
+          afterId = meArgs[++i];
+          if (!afterId) throw new Error("Tweet ID is required: xp me --after <tweet_id>");
+        } else if (meArgs[i] === "--limit") {
+          limit = meArgs[++i];
+          if (!limit) throw new Error("Number is required: xp me --limit <N>");
+        } else {
+          throw new Error(`Unknown argument: ${meArgs[i]}\nUsage: xp me [--limit N] [--before <id>] [--after <id>]`);
+        }
+      }
+      await meCommand({ limit, beforeId, afterId, json: jsonFlag });
       break;
+    }
+
 
     case "delete":
       if (!args[1]) {
         throw new Error("Tweet ID is required: xp delete <tweet_id>");
       }
       await deleteCommand(args[1], jsonFlag);
+      break;
+
+    case "cache":
+      if (args[1] === "show") {
+        if (!args[2]) {
+          throw new Error("Tweet ID is required: xp cache show <tweet_id>");
+        }
+        await cacheShowCommand(args[2], jsonFlag);
+      } else if (args[1] === "clear") {
+        await cacheClearCommand();
+      } else {
+        await cacheListCommand(jsonFlag);
+      }
       break;
 
     case "auth":

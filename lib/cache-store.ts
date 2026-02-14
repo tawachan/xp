@@ -1,0 +1,81 @@
+import type { TweetData } from "./x-client.ts";
+
+interface CachedTweet extends TweetData {
+  cached_at: string;
+}
+
+type CacheData = Record<string, CachedTweet>;
+
+function getCachePath(): string {
+  const home = Deno.env.get("HOME") ?? Deno.env.get("USERPROFILE") ?? "";
+  return `${home}/.config/xp/cache/tweets.json`;
+}
+
+function getCacheDir(): string {
+  const home = Deno.env.get("HOME") ?? Deno.env.get("USERPROFILE") ?? "";
+  return `${home}/.config/xp/cache`;
+}
+
+async function loadCache(): Promise<CacheData> {
+  try {
+    const text = await Deno.readTextFile(getCachePath());
+    return JSON.parse(text) as CacheData;
+  } catch {
+    return {};
+  }
+}
+
+async function saveCache(data: CacheData): Promise<void> {
+  const dir = getCacheDir();
+  await Deno.mkdir(dir, { recursive: true });
+  await Deno.writeTextFile(getCachePath(), JSON.stringify(data, null, 2));
+}
+
+function toTweetData({ cached_at: _, ...tweet }: CachedTweet): TweetData {
+  return tweet;
+}
+
+export async function cacheTweet(tweet: TweetData): Promise<void> {
+  const data = await loadCache();
+  data[tweet.id] = { ...tweet, cached_at: new Date().toISOString() };
+  await saveCache(data);
+}
+
+export async function cacheTweets(tweets: TweetData[]): Promise<void> {
+  const data = await loadCache();
+  const now = new Date().toISOString();
+  for (const tweet of tweets) {
+    data[tweet.id] = { ...tweet, cached_at: now };
+  }
+  await saveCache(data);
+}
+
+export async function getCachedTweet(id: string): Promise<TweetData | null> {
+  const data = await loadCache();
+  const cached = data[id];
+  return cached ? toTweetData(cached) : null;
+}
+
+export async function listCachedTweets(): Promise<TweetData[]> {
+  const data = await loadCache();
+  return Object.values(data)
+    .sort((a, b) => (b.cached_at > a.cached_at ? 1 : -1))
+    .map(toTweetData);
+}
+
+export async function removeCachedTweet(id: string): Promise<void> {
+  const data = await loadCache();
+  delete data[id];
+  await saveCache(data);
+}
+
+export async function clearCache(): Promise<void> {
+  try {
+    await Deno.remove(getCachePath());
+  } catch (e) {
+    if (e instanceof Deno.errors.NotFound) {
+      return;
+    }
+    throw e;
+  }
+}

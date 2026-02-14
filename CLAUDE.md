@@ -64,8 +64,11 @@ url: https://x.com/i/status/1234567890123456789
 ### List your recent tweets (requires paid plan)
 
 ```bash
-xp me        # default: 10 tweets
-xp me 20     # up to 100
+xp me                                      # default: 10 tweets
+xp me --limit 20                           # up to 100
+xp me --before 1234567890123456789         # tweets older than this ID
+xp me --after 1234567890123456789          # tweets newer than this ID
+xp me --limit 20 --before 1234567890123456789  # combine limit with cursor
 ```
 
 Output:
@@ -87,6 +90,20 @@ xp delete 1234567890123456789
 ```
 
 Output: `deleted: 1234567890123456789`
+
+### Cache (offline access to previously fetched tweets)
+
+`xp get` caches tweets automatically. `xp me` also saves all fetched tweets to cache.
+
+```bash
+xp cache list              # List all cached tweets
+xp cache show <tweet_id>   # Show a specific cached tweet
+xp cache clear             # Delete all cached tweets
+```
+
+Output format is identical to `me` and `get` respectively. Supports `--json`.
+
+Cache is stored at `~/.config/xp/cache/tweets.json`.
 
 ### Setup (non-interactive)
 
@@ -153,6 +170,8 @@ xp upgrade
 - 280 character limit per tweet; use `xp thread` for longer content
 - Tweet IDs must be numeric; invalid IDs are rejected before API call
 - Config is stored at `~/.config/xp/config.json`
+- `xp get` uses cache first, avoiding paid API calls for previously fetched tweets
+- Use `xp cache list --json` to get all cached tweets programmatically
 
 ## Development
 
@@ -165,10 +184,11 @@ deno task compile        # Compile to binary
 ## Project Structure
 
 - `main.ts` - Entry point, command routing
-- `commands/` - Command implementations (tweet, thread, reply, get, me, delete, config, auth, upgrade, completions)
+- `commands/` - Command implementations (tweet, thread, reply, get, me, delete, cache, config, auth, upgrade, completions)
 - `lib/oauth.ts` - OAuth 1.0a signatures (WebCrypto API, zero npm deps)
 - `lib/x-client.ts` - X API v2 HTTP client
 - `lib/config-store.ts` - Config file management (~/.config/xp/config.json)
+- `lib/cache-store.ts` - Tweet cache management (~/.config/xp/cache/tweets.json)
 - `lib/output.ts` - Machine-readable output formatting
 
 ## Key Design Decisions

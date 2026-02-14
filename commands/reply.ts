@@ -1,4 +1,5 @@
 import { postTweet } from "../lib/x-client.ts";
+import { cacheTweet } from "../lib/cache-store.ts";
 import { formatTweetResult } from "../lib/output.ts";
 
 export async function replyCommand(tweetId: string, text: string, json = false): Promise<void> {
@@ -9,5 +10,6 @@ export async function replyCommand(tweetId: string, text: string, json = false):
     throw new Error(`Text is too long (${text.length}/280 characters)`);
   }
   const result = await postTweet(text, tweetId);
+  await cacheTweet({ id: result.id, text, created_at: new Date().toISOString() });
   console.log(formatTweetResult(result, json));
 }

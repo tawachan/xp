@@ -191,6 +191,16 @@ deno task compile        # Compile to binary
 - `lib/cache-store.ts` - Tweet cache management (~/.config/xp/cache/tweets.json)
 - `lib/output.ts` - Machine-readable output formatting
 
+## Rules
+
+- When adding, removing, or renaming a command or subcommand in `main.ts`, you MUST update ALL of the following to match:
+  - `commands/completions.ts` (Fish, Bash, Zsh sections)
+  - `README.md` (usage examples and command list)
+  - `docs/index.html` (Usage section on the website)
+  - `CLAUDE.md` (agent documentation)
+- When adding or removing flags for a command, you MUST update the same files listed above
+- Run `deno task check` after modifying completions to ensure no type errors
+
 ## Key Design Decisions
 
 - OAuth 1.0a signatures via WebCrypto API (zero npm dependencies)

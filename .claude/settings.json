@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash scripts/check-completions-sync.sh",
+            "timeout": 5000
+          }
+        ]
+      }
+    ]
+  }
+}

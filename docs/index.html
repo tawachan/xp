@@ -7,14 +7,26 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; color: #e6edf3; background: #0d1117; line-height: 1.6; }
-    .container { max-width: 720px; margin: 0 auto; padding: 80px 24px; }
+    .container { max-width: 760px; margin: 0 auto; padding: 80px 24px; }
     h1 { font-size: 3rem; font-weight: 800; margin-bottom: 8px; }
     .tagline { font-size: 1.25rem; color: #8b949e; margin-bottom: 48px; }
     .hero-code { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 20px 24px; font-family: "SF Mono", "Fira Code", monospace; font-size: 1.1rem; margin-bottom: 48px; color: #7ee787; }
     .hero-code .prompt { color: #8b949e; }
+    .hero-code .comment { color: #484f58; }
     h2 { font-size: 1.5rem; margin: 48px 0 16px; color: #f0f6fc; }
-    .install-block { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 16px 20px; font-family: monospace; font-size: 0.9rem; overflow-x: auto; margin-bottom: 8px; color: #c9d1d9; }
-    .install-label { font-size: 0.85rem; color: #8b949e; margin-bottom: 4px; }
+    .install-tabs { display: flex; gap: 0; margin-bottom: 0; }
+    .install-tab { padding: 8px 20px; font-size: 0.9rem; color: #8b949e; background: #0d1117; border: 1px solid #30363d; border-bottom: none; cursor: pointer; transition: color 0.2s, background 0.2s; }
+    .install-tab:first-child { border-radius: 8px 0 0 0; }
+    .install-tab:last-child { border-radius: 0 8px 0 0; }
+    .install-tab.active { color: #f0f6fc; background: #161b22; border-bottom-color: #161b22; }
+    .install-panel { display: none; background: #161b22; border: 1px solid #30363d; border-radius: 0 8px 8px 8px; padding: 20px 24px; font-family: monospace; font-size: 0.9rem; color: #c9d1d9; margin-bottom: 24px; }
+    .install-panel.active { display: block; }
+    .install-panel .cmd { color: #7ee787; }
+    .install-panel .note { color: #8b949e; font-size: 0.85rem; margin-top: 12px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
+    .usage-section { margin-top: 16px; }
+    .usage-item { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 16px 20px; margin-bottom: 8px; }
+    .usage-item .cmd { font-family: monospace; font-size: 0.95rem; color: #7ee787; }
+    .usage-item .desc { font-size: 0.85rem; color: #8b949e; margin-top: 4px; }
     .features { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
     .feature { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 20px; }
     .feature h3 { font-size: 1rem; margin-bottom: 8px; color: #f0f6fc; }
@@ -25,7 +37,7 @@
     .links a:hover { border-color: #58a6ff; }
     footer { margin-top: 80px; color: #484f58; font-size: 0.85rem; }
     footer a { color: #58a6ff; text-decoration: none; }
-    @media (max-width: 600px) { .features { grid-template-columns: 1fr; } h1 { font-size: 2rem; } }
+    @media (max-width: 600px) { .features { grid-template-columns: 1fr; } h1 { font-size: 2rem; } .install-tab { padding: 6px 12px; font-size: 0.8rem; } }
   </style>
 </head>
 <body>
@@ -41,17 +53,74 @@
 
     <h2>Install</h2>
 
-    <p class="install-label">macOS (Apple Silicon)</p>
-    <div class="install-block">curl -fsSL -L https://github.com/tawachan/xp/releases/latest/download/xp-darwin-arm64 -o /usr/local/bin/xp && chmod +x /usr/local/bin/xp</div>
+    <div class="install-tabs">
+      <div class="install-tab active" onclick="showTab('brew')">Homebrew</div>
+      <div class="install-tab" onclick="showTab('curl')">curl</div>
+      <div class="install-tab" onclick="showTab('deno')">Deno</div>
+      <div class="install-tab" onclick="showTab('source')">Source</div>
+    </div>
 
-    <p class="install-label">macOS (Intel)</p>
-    <div class="install-block">curl -fsSL -L https://github.com/tawachan/xp/releases/latest/download/xp-darwin-x64 -o /usr/local/bin/xp && chmod +x /usr/local/bin/xp</div>
+    <div id="tab-brew" class="install-panel active">
+      <span class="cmd">brew install tawachan/tap/xp</span>
+      <div class="note">macOS and Linux. Update with <code style="color:#7ee787">brew upgrade xp</code>.</div>
+    </div>
+    <div id="tab-curl" class="install-panel">
+      <span class="comment" style="color:#484f58"># macOS (Apple Silicon)</span><br>
+      <span class="cmd">curl -fsSL -L https://github.com/tawachan/xp/releases/latest/download/xp-darwin-arm64 -o /usr/local/bin/xp && chmod +x /usr/local/bin/xp</span><br><br>
+      <span class="comment" style="color:#484f58"># macOS (Intel)</span><br>
+      <span class="cmd">curl -fsSL -L https://github.com/tawachan/xp/releases/latest/download/xp-darwin-x64 -o /usr/local/bin/xp && chmod +x /usr/local/bin/xp</span><br><br>
+      <span class="comment" style="color:#484f58"># Linux (x64)</span><br>
+      <span class="cmd">curl -fsSL -L https://github.com/tawachan/xp/releases/latest/download/xp-linux-x64 -o /usr/local/bin/xp && chmod +x /usr/local/bin/xp</span><br><br>
+      <span class="comment" style="color:#484f58"># Linux (arm64)</span><br>
+      <span class="cmd">curl -fsSL -L https://github.com/tawachan/xp/releases/latest/download/xp-linux-arm64 -o /usr/local/bin/xp && chmod +x /usr/local/bin/xp</span>
+      <div class="note">Update with <code style="color:#7ee787">xp upgrade</code>.</div>
+    </div>
+    <div id="tab-deno" class="install-panel">
+      <span class="cmd">deno install -g --allow-net --allow-read --allow-write --allow-env --allow-run -n xp https://raw.githubusercontent.com/tawachan/xp/main/main.ts</span>
+      <div class="note">Requires <a href="https://deno.com" style="color:#58a6ff">Deno 2.x</a>.</div>
+    </div>
+    <div id="tab-source" class="install-panel">
+      <span class="cmd">git clone https://github.com/tawachan/xp.git && cd xp && deno task compile && sudo mv xp /usr/local/bin/</span>
+      <div class="note">Requires <a href="https://deno.com" style="color:#58a6ff">Deno 2.x</a>.</div>
+    </div>
 
-    <p class="install-label">Linux (x64)</p>
-    <div class="install-block">curl -fsSL -L https://github.com/tawachan/xp/releases/latest/download/xp-linux-x64 -o /usr/local/bin/xp && chmod +x /usr/local/bin/xp</div>
+    <h2>Setup</h2>
+    <div class="hero-code" style="margin-bottom:16px">
+      <span class="prompt">$</span> xp auth login<br>
+      <span class="comment"># 1. Enter your API Key &amp; Secret from the Developer Portal</span><br>
+      <span class="comment"># 2. Authorize in browser</span><br>
+      <span class="comment"># 3. Enter the PIN</span><br>
+      <span class="comment"># Done!</span>
+    </div>
+    <p style="color:#8b949e; font-size:0.9rem;">Get your API keys from the <a href="https://developer.x.com/en/portal/dashboard" style="color:#58a6ff">X Developer Portal</a>. <a href="https://docs.x.com/x-api/getting-started/pricing" style="color:#58a6ff">Pay-Per-Use</a> pricing recommended.</p>
 
-    <p class="install-label">Linux (arm64)</p>
-    <div class="install-block">curl -fsSL -L https://github.com/tawachan/xp/releases/latest/download/xp-linux-arm64 -o /usr/local/bin/xp && chmod +x /usr/local/bin/xp</div>
+    <h2>Usage</h2>
+    <div class="usage-section">
+      <div class="usage-item">
+        <div class="cmd">xp "Hello from xp!"</div>
+        <div class="desc">Post a tweet. Or use <code style="color:#7ee787">xp tweet "text"</code>.</div>
+      </div>
+      <div class="usage-item">
+        <div class="cmd">xp thread "First" "Second" "Third"</div>
+        <div class="desc">Post a thread. Each tweet auto-replies to the previous one.</div>
+      </div>
+      <div class="usage-item">
+        <div class="cmd">xp reply 1234567890 "Nice!"</div>
+        <div class="desc">Reply to a specific tweet.</div>
+      </div>
+      <div class="usage-item">
+        <div class="cmd">xp get 1234567890</div>
+        <div class="desc">Fetch a tweet by ID. Requires paid API plan.</div>
+      </div>
+      <div class="usage-item">
+        <div class="cmd">xp me --json | jq '.[0].text'</div>
+        <div class="desc">List your recent tweets. <code style="color:#7ee787">--json</code> works on any command.</div>
+      </div>
+      <div class="usage-item">
+        <div class="cmd">xp delete 1234567890</div>
+        <div class="desc">Delete a tweet by ID.</div>
+      </div>
+    </div>
 
     <h2>Features</h2>
     <div class="features">
@@ -85,11 +154,21 @@
       <a href="https://github.com/tawachan/xp">GitHub</a>
       <a href="https://github.com/tawachan/xp/releases/latest">Releases</a>
       <a href="https://github.com/tawachan/xp#getting-started">Getting Started</a>
+      <a href="https://github.com/tawachan/xp/blob/main/CLAUDE.md">AI Agent Guide</a>
     </div>
 
     <footer>
-      <p>MIT License &middot; Built with <a href="https://deno.com">Deno</a></p>
+      <p>MIT License &middot; Built with <a href="https://deno.com">Deno</a> &middot; Not affiliated with X Corp.</p>
     </footer>
   </div>
+
+  <script>
+    function showTab(name) {
+      document.querySelectorAll('.install-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.install-panel').forEach(p => p.classList.remove('active'));
+      event.target.classList.add('active');
+      document.getElementById('tab-' + name).classList.add('active');
+    }
+  </script>
 </body>
 </html>

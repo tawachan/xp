@@ -3,6 +3,7 @@ import { threadCommand } from "./commands/thread.ts";
 import { deleteCommand } from "./commands/delete.ts";
 import { configSetCommand, configShowCommand } from "./commands/config.ts";
 import { authLoginCommand, authLogoutCommand } from "./commands/auth.ts";
+import { completionsCommand } from "./commands/completions.ts";
 import { formatError } from "./lib/output.ts";
 import denoConfig from "./deno.json" with { type: "json" };
 
@@ -19,6 +20,7 @@ Usage:
   xp auth logout                      Remove saved credentials
   xp config set [flags]              Set API credentials
   xp config show                     Show current config
+  xp completions <shell>             Generate shell completions (fish/bash/zsh)
   xp help                            Show this help
   xp version                         Show version
 
@@ -87,6 +89,13 @@ async function main(): Promise<void> {
       } else {
         throw new Error("使い方: xp auth login | xp auth logout");
       }
+      break;
+
+    case "completions":
+      if (!args[1]) {
+        throw new Error("シェルを指定してください: xp completions fish|bash|zsh");
+      }
+      completionsCommand(args[1]);
       break;
 
     case "config":

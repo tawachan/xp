@@ -12,7 +12,7 @@ export async function authLoginCommand(): Promise<void> {
   let apiSecret = partial.apiSecret ?? "";
 
   if (!apiKey || !apiSecret) {
-    console.log("API Key が未設定です。Developer Portal で取得した値を入力してください:");
+    console.log("API Key not configured. Enter your credentials from the Developer Portal:");
     console.log("  https://developer.x.com/en/portal/dashboard\n");
 
     if (!apiKey) {
@@ -22,12 +22,12 @@ export async function authLoginCommand(): Promise<void> {
       apiSecret = prompt("API Secret:")?.trim() ?? "";
     }
     if (!apiKey || !apiSecret) {
-      throw new Error("API Key と API Secret は必須です");
+      throw new Error("API Key and API Secret are required");
     }
   }
 
   // Step 1: Request token
-  console.log("認証を開始します...\n");
+  console.log("Starting authentication...\n");
 
   const requestTokenCreds = {
     apiKey,
@@ -50,7 +50,7 @@ export async function authLoginCommand(): Promise<void> {
 
   if (!requestRes.ok) {
     const body = await requestRes.text();
-    throw new Error(`Request Token の取得に失敗しました (${requestRes.status}): ${body}`);
+    throw new Error(`Failed to get request token (${requestRes.status}): ${body}`);
   }
 
   const requestBody = await requestRes.text();
@@ -59,12 +59,12 @@ export async function authLoginCommand(): Promise<void> {
   const oauthTokenSecret = requestParams.get("oauth_token_secret");
 
   if (!oauthToken || !oauthTokenSecret) {
-    throw new Error("Request Token のレスポンスが不正です");
+    throw new Error("Invalid request token response");
   }
 
   // Step 2: Direct user to authorize
   const authorizeUrl = `${AUTHORIZE_URL}?oauth_token=${oauthToken}`;
-  console.log("以下のURLをブラウザで開いて、アプリを許可してください:\n");
+  console.log("Open this URL in your browser and authorize the app:\n");
   console.log(`  ${authorizeUrl}\n`);
 
   // Try to open browser automatically
@@ -81,9 +81,9 @@ export async function authLoginCommand(): Promise<void> {
   }
 
   // Step 3: Get PIN from user
-  const pin = prompt("PINを入力してください:")?.trim();
+  const pin = prompt("Enter PIN:")?.trim();
   if (!pin) {
-    throw new Error("PINが入力されませんでした");
+    throw new Error("PIN is required");
   }
 
   // Step 4: Exchange PIN for access token
@@ -108,7 +108,7 @@ export async function authLoginCommand(): Promise<void> {
 
   if (!accessRes.ok) {
     const body = await accessRes.text();
-    throw new Error(`Access Token の取得に失敗しました (${accessRes.status}): ${body}`);
+    throw new Error(`Failed to get access token (${accessRes.status}): ${body}`);
   }
 
   const accessBody = await accessRes.text();
@@ -118,7 +118,7 @@ export async function authLoginCommand(): Promise<void> {
   const screenName = accessParams.get("screen_name");
 
   if (!accessToken || !accessTokenSecret) {
-    throw new Error("Access Token のレスポンスが不正です");
+    throw new Error("Invalid access token response");
   }
 
   // Step 5: Save config
@@ -129,11 +129,11 @@ export async function authLoginCommand(): Promise<void> {
     accessTokenSecret,
   });
 
-  console.log(`\n認証が完了しました！ (@${screenName ?? "unknown"})`);
-  console.log("設定は ~/.config/xp/config.json に保存されました");
+  console.log(`\nAuthenticated as @${screenName ?? "unknown"}`);
+  console.log("Credentials saved to ~/.config/xp/config.json");
 }
 
 export async function authLogoutCommand(): Promise<void> {
   await deleteConfig();
-  console.log("ログアウトしました（設定ファイルを削除しました）");
+  console.log("Logged out (credentials removed)");
 }

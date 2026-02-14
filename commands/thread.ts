@@ -3,11 +3,11 @@ import { formatThreadResult } from "../lib/output.ts";
 
 export async function threadCommand(texts: string[]): Promise<void> {
   if (texts.length < 2) {
-    throw new Error("スレッドには2つ以上のテキストが必要です");
+    throw new Error("Thread requires at least 2 texts");
   }
   for (const [i, text] of texts.entries()) {
     if (text.length > 280) {
-      throw new Error(`テキスト ${i + 1} が長すぎます (${text.length}/280文字)`);
+      throw new Error(`Text ${i + 1} is too long (${text.length}/280 characters)`);
     }
   }
 

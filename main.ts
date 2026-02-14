@@ -65,7 +65,7 @@ async function main(): Promise<void> {
 
     case "tweet":
       if (!args[1]) {
-        throw new Error("テキストを指定してください: xp tweet <text>");
+        throw new Error("Text is required: xp tweet <text>");
       }
       await tweetCommand(args[1]);
       break;
@@ -76,7 +76,7 @@ async function main(): Promise<void> {
 
     case "delete":
       if (!args[1]) {
-        throw new Error("ツイートIDを指定してください: xp delete <tweet_id>");
+        throw new Error("Tweet ID is required: xp delete <tweet_id>");
       }
       await deleteCommand(args[1]);
       break;
@@ -87,13 +87,13 @@ async function main(): Promise<void> {
       } else if (args[1] === "logout") {
         await authLogoutCommand();
       } else {
-        throw new Error("使い方: xp auth login | xp auth logout");
+        throw new Error("Usage: xp auth login | xp auth logout");
       }
       break;
 
     case "completions":
       if (!args[1]) {
-        throw new Error("シェルを指定してください: xp completions fish|bash|zsh");
+        throw new Error("Shell is required: xp completions fish|bash|zsh");
       }
       completionsCommand(args[1]);
       break;
@@ -104,7 +104,7 @@ async function main(): Promise<void> {
       } else if (args[1] === "show") {
         await configShowCommand();
       } else {
-        throw new Error("使い方: xp config set | xp config show");
+        throw new Error("Usage: xp config set | xp config show");
       }
       break;
 

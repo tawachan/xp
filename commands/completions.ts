@@ -113,6 +113,6 @@ export function completionsCommand(shell: string): void {
       console.log(ZSH);
       break;
     default:
-      throw new Error(`未対応のシェル: ${shell}\n使い方: xp completions fish|bash|zsh`);
+      throw new Error(`Unsupported shell: ${shell}\nUsage: xp completions fish|bash|zsh`);
   }
 }

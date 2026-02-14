@@ -262,12 +262,17 @@
 
           <div class="bg-bg-card border border-border rounded-lg p-5 hover:border-border-hover transition-colors">
             <code class="font-mono text-sm text-accent">xp get 1234567890</code>
-            <p class="text-sm text-muted mt-1.5">Fetch a tweet by ID. Requires paid API plan.</p>
+            <p class="text-sm text-muted mt-1.5">Fetch a tweet by ID. Cached locally to avoid repeat API calls.</p>
           </div>
 
           <div class="bg-bg-card border border-border rounded-lg p-5 hover:border-border-hover transition-colors">
             <code class="font-mono text-sm text-accent">xp me --json | jq '.[0].text'</code>
-            <p class="text-sm text-muted mt-1.5">List your recent tweets. <code class="text-accent text-xs bg-bg px-1.5 py-0.5 rounded">--json</code> works on any command.</p>
+            <p class="text-sm text-muted mt-1.5">List your recent tweets. Use <code class="text-accent text-xs bg-bg px-1.5 py-0.5 rounded">--before</code> / <code class="text-accent text-xs bg-bg px-1.5 py-0.5 rounded">--after</code> to paginate.</p>
+          </div>
+
+          <div class="bg-bg-card border border-border rounded-lg p-5 hover:border-border-hover transition-colors">
+            <code class="font-mono text-sm text-accent">xp cache list</code>
+            <p class="text-sm text-muted mt-1.5">Browse cached tweets offline. <code class="text-accent text-xs bg-bg px-1.5 py-0.5 rounded">xp cache show &lt;id&gt;</code> / <code class="text-accent text-xs bg-bg px-1.5 py-0.5 rounded">xp cache clear</code>.</p>
           </div>
 
           <div class="bg-bg-card border border-border rounded-lg p-5 hover:border-border-hover transition-colors">

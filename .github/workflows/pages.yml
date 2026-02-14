@@ -1,11 +1,9 @@
 name: Deploy to GitHub Pages
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - "docs/**"
+  release:
+    types:
+      - published
 
 permissions:
   pages: write

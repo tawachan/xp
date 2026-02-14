@@ -1,4 +1,5 @@
 import { postTweet } from "../lib/x-client.ts";
+import { cacheTweet } from "../lib/cache-store.ts";
 import { formatThreadResult } from "../lib/output.ts";
 
 export async function threadCommand(texts: string[], json = false): Promise<void> {
@@ -13,10 +14,12 @@ export async function threadCommand(texts: string[], json = false): Promise<void
 
   const results: Array<{ id: string }> = [];
   let previousId: string | undefined;
+  const now = new Date().toISOString();
 
   for (const text of texts) {
     const result = await postTweet(text, previousId);
     results.push(result);
+    await cacheTweet({ id: result.id, text, created_at: now });
     previousId = result.id;
   }
 

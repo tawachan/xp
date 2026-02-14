@@ -7,6 +7,7 @@ import { replyCommand } from "./commands/reply.ts";
 import { configSetCommand, configShowCommand } from "./commands/config.ts";
 import { authLoginCommand, authLogoutCommand } from "./commands/auth.ts";
 import { completionsCommand } from "./commands/completions.ts";
+import { upgradeCommand } from "./commands/upgrade.ts";
 import { formatError } from "./lib/output.ts";
 import denoConfig from "./deno.json" with { type: "json" };
 
@@ -26,6 +27,7 @@ Usage:
   xp auth logout                     Remove saved credentials
   xp config set [flags]              Set API credentials
   xp config show                     Show current config
+  xp upgrade                         Upgrade to the latest version
   xp completions <shell>             Generate shell completions (fish/bash/zsh)
   xp help                            Show this help
   xp version                         Show version
@@ -123,6 +125,10 @@ async function main(): Promise<void> {
       } else {
         throw new Error("Usage: xp auth login | xp auth logout");
       }
+      break;
+
+    case "upgrade":
+      await upgradeCommand();
       break;
 
     case "completions":

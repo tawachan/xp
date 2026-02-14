@@ -10,6 +10,7 @@ complete -c xp -n '__fish_use_subcommand' -a me -d 'List your recent tweets'
 complete -c xp -n '__fish_use_subcommand' -a delete -d 'Delete a tweet'
 complete -c xp -n '__fish_use_subcommand' -a auth -d 'Authentication'
 complete -c xp -n '__fish_use_subcommand' -a config -d 'Manage config'
+complete -c xp -n '__fish_use_subcommand' -a upgrade -d 'Upgrade to latest version'
 complete -c xp -n '__fish_use_subcommand' -a completions -d 'Generate shell completions'
 complete -c xp -n '__fish_use_subcommand' -a help -d 'Show help'
 complete -c xp -n '__fish_use_subcommand' -a version -d 'Show version'
@@ -38,7 +39,7 @@ _xp() {
     COMPREPLY=()
     cur="\${COMP_WORDS[COMP_CWORD]}"
     prev="\${COMP_WORDS[COMP_CWORD-1]}"
-    commands="tweet thread reply get me delete auth config completions help version"
+    commands="tweet thread reply get me delete auth config upgrade completions help version"
 
     case "\${prev}" in
         xp)
@@ -75,6 +76,7 @@ _xp() {
         'delete:Delete a tweet'
         'auth:Authentication'
         'config:Manage config'
+        'upgrade:Upgrade to latest version'
         'completions:Generate shell completions'
         'help:Show help'
         'version:Show version'

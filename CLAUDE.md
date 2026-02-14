@@ -35,6 +35,51 @@ tweet_id: 1234567890123456790
 url: https://x.com/i/status/1234567890123456790
 ```
 
+### Reply to a tweet
+
+```bash
+xp reply 1234567890123456789 "Great thread!"
+```
+
+Output:
+```
+tweet_id: 1234567890123456790
+url: https://x.com/i/status/1234567890123456790
+```
+
+### Fetch a tweet (requires Basic plan)
+
+```bash
+xp get 1234567890123456789
+```
+
+Output:
+```
+tweet_id: 1234567890123456789
+text: Hello world
+created_at: 2024-01-15T10:30:00.000Z
+url: https://x.com/i/status/1234567890123456789
+```
+
+### List your recent tweets (requires Basic plan)
+
+```bash
+xp me        # default: 10 tweets
+xp me 20     # up to 100
+```
+
+Output:
+```
+[1/10]
+tweet_id: 1234567890123456789
+text: Hello world
+created_at: 2024-01-15T10:30:00.000Z
+url: https://x.com/i/status/1234567890123456789
+
+[2/10]
+...
+```
+
 ### Delete a tweet
 
 ```bash
@@ -60,6 +105,7 @@ Common errors:
 - `Config not found` → credentials not set up
 - `Authentication failed` → invalid or expired tokens
 - `Permission denied` → app needs Read and Write access
+- `This feature requires X API Basic plan` → `get`/`me` need paid plan ($200/month)
 - `Rate limit exceeded` → wait until reset time shown
 - `Text is too long` → tweet exceeds 280 characters
 
@@ -82,7 +128,7 @@ deno task compile        # Compile to binary
 ## Project Structure
 
 - `main.ts` - Entry point, command routing
-- `commands/` - Command implementations (tweet, thread, delete, config, auth, completions)
+- `commands/` - Command implementations (tweet, thread, reply, get, me, delete, config, auth, completions)
 - `lib/oauth.ts` - OAuth 1.0a signatures (WebCrypto API, zero npm deps)
 - `lib/x-client.ts` - X API v2 HTTP client
 - `lib/config-store.ts` - Config file management (~/.config/xp/config.json)

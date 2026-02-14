@@ -31,6 +31,64 @@ export async function postTweet(
   return { id: json.data.id };
 }
 
+export interface TweetData {
+  id: string;
+  text: string;
+  created_at?: string;
+  author_id?: string;
+}
+
+export async function getTweet(tweetId: string): Promise<TweetData> {
+  const config = await loadConfig();
+  const url = `${BASE_URL}/tweets/${tweetId}`;
+  const params = { "tweet.fields": "created_at,author_id" };
+
+  const authHeader = await buildAuthHeader("GET", url, config, params);
+
+  const queryString = new URLSearchParams(params).toString();
+  const res = await fetch(`${url}?${queryString}`, {
+    method: "GET",
+    headers: { Authorization: authHeader },
+  });
+
+  await handleApiError(res, "read");
+  const json = await res.json();
+  return json.data;
+}
+
+export async function getMyTweets(maxResults = 10): Promise<TweetData[]> {
+  const config = await loadConfig();
+
+  // First get authenticated user ID
+  const meUrl = `${BASE_URL}/users/me`;
+  const meAuthHeader = await buildAuthHeader("GET", meUrl, config);
+  const meRes = await fetch(meUrl, {
+    method: "GET",
+    headers: { Authorization: meAuthHeader },
+  });
+  await handleApiError(meRes, "read");
+  const meJson = await meRes.json();
+  const userId = meJson.data.id;
+
+  // Then get their tweets
+  const tweetsUrl = `${BASE_URL}/users/${userId}/tweets`;
+  const params = {
+    "max_results": maxResults.toString(),
+    "tweet.fields": "created_at",
+  };
+
+  const tweetsAuthHeader = await buildAuthHeader("GET", tweetsUrl, config, params);
+  const queryString = new URLSearchParams(params).toString();
+  const tweetsRes = await fetch(`${tweetsUrl}?${queryString}`, {
+    method: "GET",
+    headers: { Authorization: tweetsAuthHeader },
+  });
+
+  await handleApiError(tweetsRes, "read");
+  const tweetsJson = await tweetsRes.json();
+  return tweetsJson.data ?? [];
+}
+
 export async function deleteTweet(tweetId: string): Promise<void> {
   const config = await loadConfig();
   const url = `${BASE_URL}/tweets/${tweetId}`;
@@ -44,16 +102,26 @@ export async function deleteTweet(tweetId: string): Promise<void> {
     },
   });
 
-  await handleApiError(res);
+  await handleApiError(res, "write");
 }
 
-async function handleApiError(res: Response): Promise<void> {
+async function handleApiError(
+  res: Response,
+  operation: "read" | "write" = "write",
+): Promise<void> {
   if (res.ok) return;
 
   if (res.status === 401) {
     throw new Error("Authentication failed. Run `xp auth login` to reconfigure");
   }
   if (res.status === 403) {
+    if (operation === "read") {
+      throw new Error(
+        "This feature requires X API Basic plan ($200/month) or higher.\n" +
+          "The Free plan only supports posting tweets.\n" +
+          "Upgrade at: https://developer.x.com/en/portal/products",
+      );
+    }
     throw new Error(
       "Permission denied. Ensure your app has Read and Write access in the Developer Portal",
     );

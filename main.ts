@@ -1,6 +1,9 @@
 import { tweetCommand } from "./commands/tweet.ts";
 import { threadCommand } from "./commands/thread.ts";
 import { deleteCommand } from "./commands/delete.ts";
+import { getCommand } from "./commands/get.ts";
+import { meCommand } from "./commands/me.ts";
+import { replyCommand } from "./commands/reply.ts";
 import { configSetCommand, configShowCommand } from "./commands/config.ts";
 import { authLoginCommand, authLogoutCommand } from "./commands/auth.ts";
 import { completionsCommand } from "./commands/completions.ts";
@@ -15,9 +18,12 @@ Usage:
   xp <text>                          Post a tweet
   xp tweet <text>                    Post a tweet
   xp thread <text1> <text2> ...      Post a thread
+  xp reply <tweet_id> <text>         Reply to a tweet
+  xp get <tweet_id>                  Fetch a tweet by ID
+  xp me [limit]                      List your recent tweets (default: 10)
   xp delete <tweet_id>               Delete a tweet
-  xp auth login                       Authenticate via browser (OAuth PIN flow)
-  xp auth logout                      Remove saved credentials
+  xp auth login                      Authenticate via browser (OAuth PIN flow)
+  xp auth logout                     Remove saved credentials
   xp config set [flags]              Set API credentials
   xp config show                     Show current config
   xp completions <shell>             Generate shell completions (fish/bash/zsh)
@@ -33,9 +39,16 @@ Config flags:
 Setup:
   xp auth login
 
+Note:
+  The "get" and "me" commands require X API Basic plan ($200/month) or higher.
+  The Free plan only supports posting tweets.
+
 Examples:
   xp "Hello from xp!"
   xp thread "First tweet" "Second tweet" "Third tweet"
+  xp reply 1234567890123456789 "Great thread!"
+  xp get 1234567890123456789
+  xp me 20
   xp delete 1234567890123456789
   xp config set --api-key=xxx --api-secret=xxx --access-token=xxx --access-token-secret=xxx
 `;
@@ -72,6 +85,27 @@ async function main(): Promise<void> {
 
     case "thread":
       await threadCommand(args.slice(1));
+      break;
+
+    case "reply":
+      if (!args[1]) {
+        throw new Error("Tweet ID is required: xp reply <tweet_id> <text>");
+      }
+      if (!args[2]) {
+        throw new Error("Text is required: xp reply <tweet_id> <text>");
+      }
+      await replyCommand(args[1], args[2]);
+      break;
+
+    case "get":
+      if (!args[1]) {
+        throw new Error("Tweet ID is required: xp get <tweet_id>");
+      }
+      await getCommand(args[1]);
+      break;
+
+    case "me":
+      await meCommand(args[1]);
       break;
 
     case "delete":

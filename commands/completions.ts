@@ -4,6 +4,9 @@ complete -c xp -f
 # Subcommands
 complete -c xp -n '__fish_use_subcommand' -a tweet -d 'Post a tweet'
 complete -c xp -n '__fish_use_subcommand' -a thread -d 'Post a thread'
+complete -c xp -n '__fish_use_subcommand' -a reply -d 'Reply to a tweet'
+complete -c xp -n '__fish_use_subcommand' -a get -d 'Fetch a tweet by ID'
+complete -c xp -n '__fish_use_subcommand' -a me -d 'List your recent tweets'
 complete -c xp -n '__fish_use_subcommand' -a delete -d 'Delete a tweet'
 complete -c xp -n '__fish_use_subcommand' -a auth -d 'Authentication'
 complete -c xp -n '__fish_use_subcommand' -a config -d 'Manage config'
@@ -35,7 +38,7 @@ _xp() {
     COMPREPLY=()
     cur="\${COMP_WORDS[COMP_CWORD]}"
     prev="\${COMP_WORDS[COMP_CWORD-1]}"
-    commands="tweet thread delete auth config completions help version"
+    commands="tweet thread reply get me delete auth config completions help version"
 
     case "\${prev}" in
         xp)
@@ -66,6 +69,9 @@ _xp() {
     commands=(
         'tweet:Post a tweet'
         'thread:Post a thread'
+        'reply:Reply to a tweet'
+        'get:Fetch a tweet by ID'
+        'me:List your recent tweets'
         'delete:Delete a tweet'
         'auth:Authentication'
         'config:Manage config'

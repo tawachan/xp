@@ -49,12 +49,28 @@ export async function buildAuthHeader(
     oauth_nonce: generateNonce(),
     oauth_signature_method: "HMAC-SHA1",
     oauth_timestamp: Math.floor(Date.now() / 1000).toString(),
-    oauth_token: credentials.accessToken,
     oauth_version: "1.0",
   };
 
-  // Combine OAuth params with any additional params (query params only, NOT JSON body)
-  const allParams: Record<string, string> = { ...oauthParams, ...params };
+  // Only include oauth_token when access token exists (not during request_token step)
+  if (credentials.accessToken) {
+    oauthParams.oauth_token = credentials.accessToken;
+  }
+
+  // Merge oauth_* params from extra params into oauthParams (they belong in the header)
+  const queryParams: Record<string, string> = {};
+  if (params) {
+    for (const [k, v] of Object.entries(params)) {
+      if (k.startsWith("oauth_")) {
+        oauthParams[k] = v;
+      } else {
+        queryParams[k] = v;
+      }
+    }
+  }
+
+  // Combine OAuth params with query params for signature (NOT JSON body)
+  const allParams: Record<string, string> = { ...oauthParams, ...queryParams };
 
   // Sort and encode params
   const sortedParams = Object.keys(allParams)

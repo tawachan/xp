@@ -134,6 +134,17 @@ Each tweet is automatically posted as a reply to the previous one.
 xp reply 1234567890123456789 "Great thread!"
 ```
 
+### Post with images
+
+```bash
+xp "Hello" --image photo.jpg                      # 1 image
+xp tweet "Hello" --image a.jpg --image b.jpg       # up to 4 images
+xp reply 1234567890123456789 "Nice!" --image r.png # reply with image
+xp thread "First" "Second" --image cover.jpg       # image on first tweet
+```
+
+Images must be JPG, PNG, GIF, or WebP and under 5 MB each.
+
 ### Fetch a tweet
 
 ```bash

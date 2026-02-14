@@ -12,6 +12,7 @@ export function validateTweetId(tweetId: string): void {
 export async function postTweet(
   text: string,
   replyToId?: string,
+  mediaIds?: string[],
 ): Promise<{ id: string }> {
   if (replyToId) {
     validateTweetId(replyToId);
@@ -22,6 +23,9 @@ export async function postTweet(
   const body: Record<string, unknown> = { text };
   if (replyToId) {
     body.reply = { in_reply_to_tweet_id: replyToId };
+  }
+  if (mediaIds && mediaIds.length > 0) {
+    body.media = { media_ids: mediaIds };
   }
 
   const authHeader = await buildAuthHeader("POST", url, config);

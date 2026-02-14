@@ -40,6 +40,7 @@ Usage:
 
 Flags:
   --json                             Output in JSON format
+  --image <path>                     Attach image (max 4, JPG/PNG/GIF/WebP, 5MB each)
 
 Config flags (for config set):
   --api-key=VALUE
@@ -65,11 +66,29 @@ Examples:
   xp me --limit 20 --before 1234567890123456789
   xp me --json
   xp delete 1234567890123456789
+  xp "Hello" --image photo.jpg
+  xp tweet "Hello" --image a.jpg --image b.jpg
+  xp reply 1234567890123456789 "Nice!" --image reaction.png
+  xp thread "First" "Second" --image cover.jpg
 `;
 
 async function main(): Promise<void> {
   const jsonFlag = Deno.args.includes("--json");
-  const args = Deno.args.filter((a) => a !== "--json");
+
+  // Extract --image flags and their values
+  const imagePaths: string[] = [];
+  const filteredArgs: string[] = [];
+  const rawArgs = Deno.args.filter((a) => a !== "--json");
+  for (let i = 0; i < rawArgs.length; i++) {
+    if (rawArgs[i] === "--image") {
+      const path = rawArgs[++i];
+      if (!path) throw new Error("--image requires a file path");
+      imagePaths.push(path);
+    } else {
+      filteredArgs.push(rawArgs[i]!);
+    }
+  }
+  const args = filteredArgs;
 
   if (args.length === 0) {
     console.log(HELP);
@@ -95,11 +114,11 @@ async function main(): Promise<void> {
       if (!args[1]) {
         throw new Error("Text is required: xp tweet <text>");
       }
-      await tweetCommand(args[1], jsonFlag);
+      await tweetCommand(args[1], jsonFlag, imagePaths.length ? imagePaths : undefined);
       break;
 
     case "thread":
-      await threadCommand(args.slice(1), jsonFlag);
+      await threadCommand(args.slice(1), jsonFlag, imagePaths.length ? imagePaths : undefined);
       break;
 
     case "reply":
@@ -109,7 +128,7 @@ async function main(): Promise<void> {
       if (!args[2]) {
         throw new Error("Text is required: xp reply <tweet_id> <text>");
       }
-      await replyCommand(args[1], args[2], jsonFlag);
+      await replyCommand(args[1], args[2], jsonFlag, imagePaths.length ? imagePaths : undefined);
       break;
 
     case "get":
@@ -196,7 +215,7 @@ async function main(): Promise<void> {
 
     default:
       // Treat as direct tweet text (shorthand: xp "Hello")
-      await tweetCommand(command, jsonFlag);
+      await tweetCommand(command, jsonFlag, imagePaths.length ? imagePaths : undefined);
       break;
   }
 }

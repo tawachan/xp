@@ -103,7 +103,7 @@ xp cache clear             # Delete all cached tweets
 
 Output format is identical to `me` and `get` respectively. Supports `--json`.
 
-Cache is stored at `~/.config/xp/cache/tweets/{tweet_id}.json`.
+Cache is stored at `~/.config/xp/cache/tweets.json`.
 
 ### Setup (non-interactive)
 
@@ -188,7 +188,7 @@ deno task compile        # Compile to binary
 - `lib/oauth.ts` - OAuth 1.0a signatures (WebCrypto API, zero npm deps)
 - `lib/x-client.ts` - X API v2 HTTP client
 - `lib/config-store.ts` - Config file management (~/.config/xp/config.json)
-- `lib/cache-store.ts` - Tweet cache management (~/.config/xp/cache/tweets/)
+- `lib/cache-store.ts` - Tweet cache management (~/.config/xp/cache/tweets.json)
 - `lib/output.ts` - Machine-readable output formatting
 
 ## Key Design Decisions

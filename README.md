@@ -85,7 +85,7 @@ xp completions zsh > "${fpath[1]}/_xp" && compinit
 ### 1. Create an app on the X Developer Portal
 
 1. Go to [Developer Portal](https://developer.x.com/en/portal/dashboard)
-2. Create a new app (Free tier is fine — 500 posts/month)
+2. Create a new app ([Pay-Per-Use](https://docs.x.com/x-api/getting-started/pricing) recommended — pay only for what you use)
 3. Set App permissions to **Read and Write**
 4. Copy your **API Key** and **API Secret**
 
@@ -137,7 +137,7 @@ xp reply 1234567890123456789 "Great thread!"
 xp get 1234567890123456789
 ```
 
-> Requires X API Basic plan ($200/month). Free plan only supports posting.
+> Requires a paid API plan (Pay-Per-Use or Basic).
 
 ### List your recent tweets
 
@@ -146,7 +146,7 @@ xp me         # default: 10 tweets
 xp me 20      # up to 100
 ```
 
-> Requires X API Basic plan ($200/month). Free plan only supports posting.
+> Requires a paid API plan (Pay-Per-Use or Basic).
 
 ### Delete a tweet
 

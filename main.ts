@@ -45,8 +45,8 @@ Setup:
   xp auth login
 
 Note:
-  The "get" and "me" commands require X API Basic plan ($200/month) or higher.
-  The Free plan only supports posting tweets.
+  The "get" and "me" commands require a paid plan (Pay-Per-Use or Basic).
+  See: https://developer.x.com/en/portal/products
 
 Examples:
   xp "Hello from xp!"

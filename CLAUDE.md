@@ -47,7 +47,7 @@ tweet_id: 1234567890123456790
 url: https://x.com/i/status/1234567890123456790
 ```
 
-### Fetch a tweet (requires Basic plan)
+### Fetch a tweet (requires paid plan)
 
 ```bash
 xp get 1234567890123456789
@@ -61,7 +61,7 @@ created_at: 2024-01-15T10:30:00.000Z
 url: https://x.com/i/status/1234567890123456789
 ```
 
-### List your recent tweets (requires Basic plan)
+### List your recent tweets (requires paid plan)
 
 ```bash
 xp me        # default: 10 tweets
@@ -108,7 +108,7 @@ Common errors:
 - `Permission denied` → app needs Read and Write access
 - `Not found` → tweet deleted or ID is invalid
 - `Bad request` → malformed request (details included)
-- `This feature requires X API Basic plan` → `get`/`me` need paid plan ($200/month)
+- `This feature requires a paid X API plan` → `get`/`me` need Pay-Per-Use or Basic
 - `Rate limit exceeded` → wait until reset time shown
 - `Text is too long` → tweet exceeds 280 characters
 

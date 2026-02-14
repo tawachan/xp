@@ -27,7 +27,7 @@ Set config (non-interactive): `xp config set --api-key=KEY --api-secret=SECRET -
 
 Add `--json` to any command for JSON output: `xp me --json | jq '.[0].text'`
 
-Note: `get` and `me` require X API Basic plan ($200/month). Free plan supports posting only.
+Note: `get` and `me` require a paid API plan (Pay-Per-Use or Basic).
 
 ## Output Format
 

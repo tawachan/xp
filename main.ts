@@ -4,8 +4,9 @@ import { deleteCommand } from "./commands/delete.ts";
 import { configSetCommand, configShowCommand } from "./commands/config.ts";
 import { authLoginCommand, authLogoutCommand } from "./commands/auth.ts";
 import { formatError } from "./lib/output.ts";
+import denoConfig from "./deno.json" with { type: "json" };
 
-const VERSION = "0.1.0";
+const VERSION = denoConfig.version;
 
 const HELP = `xp - X (Twitter) CLI Tool v${VERSION}
 

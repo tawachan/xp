@@ -31,6 +31,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Set version from tag
+        run: |
+          VERSION="${{ github.event.release.tag_name }}"
+          VERSION="${VERSION#v}"
+          jq --arg v "$VERSION" '.version = $v' deno.json > deno.json.tmp && mv deno.json.tmp deno.json
+
       - uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x

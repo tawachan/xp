@@ -15,6 +15,7 @@ The official [twurl](https://github.com/twitter/twurl) is a generic API client (
 | Post a tweet | `twurl -X POST -H api.twitter.com "/2/tweets" -d '{"text":"Hello"}'` | `xp "Hello"` |
 | Thread | Manually chain reply IDs | `xp thread "1" "2" "3"` |
 | JSON output | Parse raw response yourself | `xp me --json \| jq` |
+| Cache | None | Auto-cache — browse offline, save API calls |
 | Runtime | Ruby | Single binary (zero deps) |
 | Maintained | Last release 2020 | Active |
 

@@ -32,7 +32,10 @@ Usage:
   xp help                            Show this help
   xp version                         Show version
 
-Config flags:
+Flags:
+  --json                             Output in JSON format
+
+Config flags (for config set):
   --api-key=VALUE
   --api-secret=VALUE
   --access-token=VALUE
@@ -47,16 +50,18 @@ Note:
 
 Examples:
   xp "Hello from xp!"
+  xp tweet "Hello" --json
   xp thread "First tweet" "Second tweet" "Third tweet"
   xp reply 1234567890123456789 "Great thread!"
-  xp get 1234567890123456789
+  xp get 1234567890123456789 --json
   xp me 20
+  xp me --json
   xp delete 1234567890123456789
-  xp config set --api-key=xxx --api-secret=xxx --access-token=xxx --access-token-secret=xxx
 `;
 
 async function main(): Promise<void> {
-  const args = Deno.args;
+  const jsonFlag = Deno.args.includes("--json");
+  const args = Deno.args.filter((a) => a !== "--json");
 
   if (args.length === 0) {
     console.log(HELP);
@@ -82,11 +87,11 @@ async function main(): Promise<void> {
       if (!args[1]) {
         throw new Error("Text is required: xp tweet <text>");
       }
-      await tweetCommand(args[1]);
+      await tweetCommand(args[1], jsonFlag);
       break;
 
     case "thread":
-      await threadCommand(args.slice(1));
+      await threadCommand(args.slice(1), jsonFlag);
       break;
 
     case "reply":
@@ -96,25 +101,25 @@ async function main(): Promise<void> {
       if (!args[2]) {
         throw new Error("Text is required: xp reply <tweet_id> <text>");
       }
-      await replyCommand(args[1], args[2]);
+      await replyCommand(args[1], args[2], jsonFlag);
       break;
 
     case "get":
       if (!args[1]) {
         throw new Error("Tweet ID is required: xp get <tweet_id>");
       }
-      await getCommand(args[1]);
+      await getCommand(args[1], jsonFlag);
       break;
 
     case "me":
-      await meCommand(args[1]);
+      await meCommand(args[1], jsonFlag);
       break;
 
     case "delete":
       if (!args[1]) {
         throw new Error("Tweet ID is required: xp delete <tweet_id>");
       }
-      await deleteCommand(args[1]);
+      await deleteCommand(args[1], jsonFlag);
       break;
 
     case "auth":
@@ -150,7 +155,7 @@ async function main(): Promise<void> {
 
     default:
       // Treat as direct tweet text (shorthand: xp "Hello")
-      await tweetCommand(command);
+      await tweetCommand(command, jsonFlag);
       break;
   }
 }
@@ -158,6 +163,7 @@ async function main(): Promise<void> {
 try {
   await main();
 } catch (e) {
-  console.error(formatError(e instanceof Error ? e.message : String(e)));
+  const jsonFlag = Deno.args.includes("--json");
+  console.error(formatError(e instanceof Error ? e.message : String(e), jsonFlag));
   Deno.exit(1);
 }

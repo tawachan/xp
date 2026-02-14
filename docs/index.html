@@ -288,7 +288,7 @@
 
           <div class="bg-bg-card border border-border rounded-lg p-5 hover:border-border-hover transition-colors">
             <code class="font-mono text-sm text-accent">xp me --json | jq '.[0].text'</code>
-            <p class="text-sm text-muted mt-1.5">List your recent tweets. Use <code class="text-accent text-xs bg-bg px-1.5 py-0.5 rounded">--before</code> / <code class="text-accent text-xs bg-bg px-1.5 py-0.5 rounded">--after</code> to paginate.</p>
+            <p class="text-sm text-muted mt-1.5">List your recent tweets. Use <code class="text-accent text-xs bg-bg px-1.5 py-0.5 rounded">--limit N</code> to control count, <code class="text-accent text-xs bg-bg px-1.5 py-0.5 rounded">--before</code> / <code class="text-accent text-xs bg-bg px-1.5 py-0.5 rounded">--after</code> to paginate.</p>
           </div>
 
           <div class="bg-bg-card border border-border rounded-lg p-5 hover:border-border-hover transition-colors">
@@ -299,6 +299,21 @@
           <div class="bg-bg-card border border-border rounded-lg p-5 hover:border-border-hover transition-colors">
             <code class="font-mono text-sm text-accent">xp delete 1234567890</code>
             <p class="text-sm text-muted mt-1.5">Delete a tweet by ID.</p>
+          </div>
+
+          <div class="bg-bg-card border border-border rounded-lg p-5 hover:border-border-hover transition-colors">
+            <code class="font-mono text-sm text-accent">xp upgrade</code>
+            <p class="text-sm text-muted mt-1.5">Download and install the latest release from GitHub.</p>
+          </div>
+
+          <div class="bg-bg-card border border-border rounded-lg p-5 hover:border-border-hover transition-colors">
+            <code class="font-mono text-sm text-accent">xp config show</code>
+            <p class="text-sm text-muted mt-1.5">Show current config (masked). Use <code class="text-accent text-xs bg-bg px-1.5 py-0.5 rounded">xp auth logout</code> to remove credentials.</p>
+          </div>
+
+          <div class="bg-bg-card border border-border rounded-lg p-5 hover:border-border-hover transition-colors">
+            <code class="font-mono text-sm text-accent">xp "Hello" --json</code>
+            <p class="text-sm text-muted mt-1.5">Add <code class="text-accent text-xs bg-bg px-1.5 py-0.5 rounded">--json</code> to any command for structured JSON output.</p>
           </div>
         </div>
       </div>

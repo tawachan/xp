@@ -105,10 +105,18 @@ Output format is identical to `me` and `get` respectively. Supports `--json`.
 
 Cache is stored at `~/.config/xp/cache/tweets.json`.
 
+### Auth
+
+```bash
+xp auth login              # Authenticate via browser (OAuth PIN flow)
+xp auth logout             # Remove saved credentials
+```
+
 ### Setup (non-interactive)
 
 ```bash
 xp config set --api-key=KEY --api-secret=SECRET --access-token=TOKEN --access-token-secret=TOKEN_SECRET
+xp config show             # Show current config (masked)
 ```
 
 ### Error handling

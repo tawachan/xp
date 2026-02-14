@@ -20,7 +20,13 @@ The official [twurl](https://github.com/twitter/twurl) is a generic API client (
 
 ## Installation
 
-### Download binary (recommended)
+### Homebrew (macOS / Linux)
+
+```bash
+brew install tawachan/tap/xp
+```
+
+### Download binary
 
 Download the latest binary from [GitHub Releases](https://github.com/tawachan/xp/releases/latest):
 

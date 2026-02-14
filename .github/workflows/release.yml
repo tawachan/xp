@@ -67,3 +67,94 @@ jobs:
         with:
           tag_name: ${{ github.event.release.tag_name }}
           files: artifacts/*
+
+  update-homebrew:
+    needs: release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.HOMEBREW_APP_ID }}
+          private-key: ${{ secrets.HOMEBREW_APP_PRIVATE_KEY }}
+          repositories: homebrew-tap
+
+      - name: Compute SHA256 for all binaries
+        id: sha
+        run: |
+          TAG="${{ github.event.release.tag_name }}"
+          BASE="https://github.com/tawachan/xp/releases/download/${TAG}"
+          for suffix in darwin-arm64 darwin-x64 linux-x64 linux-arm64; do
+            curl -fsSL -L "${BASE}/xp-${suffix}" -o "/tmp/xp-${suffix}"
+          done
+          echo "darwin_arm64=$(sha256sum /tmp/xp-darwin-arm64 | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+          echo "darwin_x64=$(sha256sum /tmp/xp-darwin-x64 | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+          echo "linux_x64=$(sha256sum /tmp/xp-linux-x64 | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+          echo "linux_arm64=$(sha256sum /tmp/xp-linux-arm64 | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout homebrew-tap
+        uses: actions/checkout@v4
+        with:
+          repository: tawachan/homebrew-tap
+          token: ${{ steps.app-token.outputs.token }}
+
+      - name: Update formula
+        run: |
+          TAG="${{ github.event.release.tag_name }}"
+          VERSION="${TAG#v}"
+          cat > Formula/xp.rb << 'FORMULA'
+          class Xp < Formula
+            desc "Fast, minimal CLI for posting to X (Twitter) from your terminal"
+            homepage "https://github.com/tawachan/xp"
+            version "VERSION_PLACEHOLDER"
+            license "MIT"
+
+            on_macos do
+              if Hardware::CPU.arm?
+                url "https://github.com/tawachan/xp/releases/download/vVERSION_PLACEHOLDER/xp-darwin-arm64"
+                sha256 "SHA_DARWIN_ARM64"
+              else
+                url "https://github.com/tawachan/xp/releases/download/vVERSION_PLACEHOLDER/xp-darwin-x64"
+                sha256 "SHA_DARWIN_X64"
+              end
+            end
+
+            on_linux do
+              if Hardware::CPU.arm?
+                url "https://github.com/tawachan/xp/releases/download/vVERSION_PLACEHOLDER/xp-linux-arm64"
+                sha256 "SHA_LINUX_ARM64"
+              else
+                url "https://github.com/tawachan/xp/releases/download/vVERSION_PLACEHOLDER/xp-linux-x64"
+                sha256 "SHA_LINUX_X64"
+              end
+            end
+
+            def install
+              binary = Dir.glob("xp-*").first || "xp"
+              bin.install binary => "xp"
+            end
+
+            test do
+              assert_match "xp", shell_output("#{bin}/xp version")
+            end
+          end
+          FORMULA
+
+          sed -i "s/VERSION_PLACEHOLDER/${VERSION}/g" Formula/xp.rb
+          sed -i "s/SHA_DARWIN_ARM64/${{ steps.sha.outputs.darwin_arm64 }}/g" Formula/xp.rb
+          sed -i "s/SHA_DARWIN_X64/${{ steps.sha.outputs.darwin_x64 }}/g" Formula/xp.rb
+          sed -i "s/SHA_LINUX_X64/${{ steps.sha.outputs.linux_x64 }}/g" Formula/xp.rb
+          sed -i "s/SHA_LINUX_ARM64/${{ steps.sha.outputs.linux_arm64 }}/g" Formula/xp.rb
+
+          # Remove leading whitespace from heredoc
+          sed -i 's/^          //' Formula/xp.rb
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Formula/xp.rb
+          git commit -m "Update xp to ${{ github.event.release.tag_name }}"
+          git push

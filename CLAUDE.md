@@ -42,7 +42,7 @@ xp reply 1234567890123456789 "Great thread!"
 ```
 
 Output:
-```
+```text
 tweet_id: 1234567890123456790
 url: https://x.com/i/status/1234567890123456790
 ```
@@ -54,7 +54,7 @@ xp get 1234567890123456789
 ```
 
 Output:
-```
+```text
 tweet_id: 1234567890123456789
 text: Hello world
 created_at: 2024-01-15T10:30:00.000Z
@@ -69,7 +69,7 @@ xp me 20     # up to 100
 ```
 
 Output:
-```
+```text
 [1/10]
 tweet_id: 1234567890123456789
 text: Hello world

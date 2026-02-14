@@ -53,6 +53,9 @@ export async function getTweet(tweetId: string): Promise<TweetData> {
 
   await handleApiError(res, "read");
   const json = await res.json();
+  if (!json.data) {
+    throw new Error(`Tweet not found: ${tweetId}`);
+  }
   return json.data;
 }
 
@@ -68,6 +71,9 @@ export async function getMyTweets(maxResults = 10): Promise<TweetData[]> {
   });
   await handleApiError(meRes, "read");
   const meJson = await meRes.json();
+  if (!meJson.data) {
+    throw new Error("Failed to retrieve authenticated user");
+  }
   const userId = meJson.data.id;
 
   // Then get their tweets

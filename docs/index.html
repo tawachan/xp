@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>xp - X (Twitter) CLI Tool</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; color: #e6edf3; background: #0d1117; line-height: 1.6; }
+    .container { max-width: 720px; margin: 0 auto; padding: 80px 24px; }
+    h1 { font-size: 3rem; font-weight: 800; margin-bottom: 8px; }
+    .tagline { font-size: 1.25rem; color: #8b949e; margin-bottom: 48px; }
+    .hero-code { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 20px 24px; font-family: "SF Mono", "Fira Code", monospace; font-size: 1.1rem; margin-bottom: 48px; color: #7ee787; }
+    .hero-code .prompt { color: #8b949e; }
+    h2 { font-size: 1.5rem; margin: 48px 0 16px; color: #f0f6fc; }
+    .install-block { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 16px 20px; font-family: monospace; font-size: 0.9rem; overflow-x: auto; margin-bottom: 8px; color: #c9d1d9; }
+    .install-label { font-size: 0.85rem; color: #8b949e; margin-bottom: 4px; }
+    .features { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
+    .feature { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 20px; }
+    .feature h3 { font-size: 1rem; margin-bottom: 8px; color: #f0f6fc; }
+    .feature p { font-size: 0.9rem; color: #8b949e; }
+    .feature code { background: #1c2128; padding: 2px 6px; border-radius: 4px; font-size: 0.85rem; color: #7ee787; }
+    .links { margin-top: 48px; display: flex; gap: 16px; flex-wrap: wrap; }
+    .links a { color: #58a6ff; text-decoration: none; font-size: 1rem; padding: 10px 20px; border: 1px solid #30363d; border-radius: 8px; transition: border-color 0.2s; }
+    .links a:hover { border-color: #58a6ff; }
+    footer { margin-top: 80px; color: #484f58; font-size: 0.85rem; }
+    footer a { color: #58a6ff; text-decoration: none; }
+    @media (max-width: 600px) { .features { grid-template-columns: 1fr; } h1 { font-size: 2rem; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>xp</h1>
+    <p class="tagline">Post to X (Twitter) from your terminal. Single binary, zero dependencies.</p>
+
+    <div class="hero-code">
+      <span class="prompt">$</span> xp "Hello, world!"<br>
+      tweet_id: 1893684025138438386<br>
+      url: https://x.com/i/status/1893684025138438386
+    </div>
+
+    <h2>Install</h2>
+
+    <p class="install-label">macOS (Apple Silicon)</p>
+    <div class="install-block">curl -fsSL -L https://github.com/tawachan/xp/releases/latest/download/xp-darwin-arm64 -o /usr/local/bin/xp && chmod +x /usr/local/bin/xp</div>
+
+    <p class="install-label">macOS (Intel)</p>
+    <div class="install-block">curl -fsSL -L https://github.com/tawachan/xp/releases/latest/download/xp-darwin-x64 -o /usr/local/bin/xp && chmod +x /usr/local/bin/xp</div>
+
+    <p class="install-label">Linux (x64)</p>
+    <div class="install-block">curl -fsSL -L https://github.com/tawachan/xp/releases/latest/download/xp-linux-x64 -o /usr/local/bin/xp && chmod +x /usr/local/bin/xp</div>
+
+    <p class="install-label">Linux (arm64)</p>
+    <div class="install-block">curl -fsSL -L https://github.com/tawachan/xp/releases/latest/download/xp-linux-arm64 -o /usr/local/bin/xp && chmod +x /usr/local/bin/xp</div>
+
+    <h2>Features</h2>
+    <div class="features">
+      <div class="feature">
+        <h3>Simple</h3>
+        <p>Just <code>xp "text"</code>. No API paths, no JSON payloads.</p>
+      </div>
+      <div class="feature">
+        <h3>Threads</h3>
+        <p><code>xp thread "1" "2" "3"</code> — auto reply chain.</p>
+      </div>
+      <div class="feature">
+        <h3>Agent-friendly</h3>
+        <p>Machine-readable output, non-interactive flags, exit codes.</p>
+      </div>
+      <div class="feature">
+        <h3>Zero deps</h3>
+        <p>Single binary. OAuth 1.0a via WebCrypto. No runtime needed.</p>
+      </div>
+    </div>
+
+    <div class="links">
+      <a href="https://github.com/tawachan/xp">GitHub</a>
+      <a href="https://github.com/tawachan/xp/releases/latest">Releases</a>
+      <a href="https://github.com/tawachan/xp#getting-started">Getting Started</a>
+    </div>
+
+    <footer>
+      <p>MIT License &middot; Built with <a href="https://deno.com">Deno</a></p>
+    </footer>
+  </div>
+</body>
+</html>

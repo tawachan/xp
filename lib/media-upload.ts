@@ -65,7 +65,7 @@ export async function uploadMedia(filePath: string): Promise<string> {
   }
 
   const json = await res.json();
-  return json.id;
+  return json.data.id;
 }
 
 async function parseUploadError(res: Response): Promise<string> {

@@ -40,6 +40,9 @@ complete -c xp -n '__fish_seen_subcommand_from set' -l api-secret -d 'API Secret
 complete -c xp -n '__fish_seen_subcommand_from set' -l access-token -d 'Access Token'
 complete -c xp -n '__fish_seen_subcommand_from set' -l access-token-secret -d 'Access Token Secret'
 
+# Global flags
+complete -c xp -l json -d 'Output in JSON format'
+
 # completions subcommands
 complete -c xp -n '__fish_seen_subcommand_from completions' -a 'fish bash zsh' -d 'Shell type'
 `;
@@ -60,7 +63,7 @@ _xp() {
             COMPREPLY=( $(compgen -W "login logout" -- "\${cur}") )
             ;;
         me)
-            COMPREPLY=( $(compgen -W "--limit --before --after" -- "\${cur}") )
+            COMPREPLY=( $(compgen -W "--limit --before --after --json" -- "\${cur}") )
             ;;
         cache)
             COMPREPLY=( $(compgen -W "list show clear" -- "\${cur}") )
@@ -73,6 +76,9 @@ _xp() {
             ;;
         set)
             COMPREPLY=( $(compgen -W "--api-key= --api-secret= --access-token= --access-token-secret=" -- "\${cur}") )
+            ;;
+        tweet|thread|reply|get|delete)
+            COMPREPLY=( $(compgen -W "--json" -- "\${cur}") )
             ;;
     esac
 }
@@ -101,6 +107,7 @@ _xp() {
     )
 
     _arguments -C \\
+        '--json[Output in JSON format]' \\
         '1:command:->command' \\
         '*::arg:->args'
 
@@ -114,7 +121,7 @@ _xp() {
                     _values 'subcommand' 'login[Authenticate via browser]' 'logout[Remove saved credentials]'
                     ;;
                 me)
-                    _arguments '--limit[Number of tweets to fetch]:count:' '--before[Fetch tweets older than this ID]:tweet_id:' '--after[Fetch tweets newer than this ID]:tweet_id:'
+                    _arguments '--limit[Number of tweets to fetch]:count:' '--before[Fetch tweets older than this ID]:tweet_id:' '--after[Fetch tweets newer than this ID]:tweet_id:' '--json[Output in JSON format]'
                     ;;
                 cache)
                     _values 'subcommand' 'list[List cached tweets]' 'show[Show a cached tweet]' 'clear[Clear all cached tweets]'

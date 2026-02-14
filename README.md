@@ -144,8 +144,11 @@ xp get 1234567890123456789
 ### List your recent tweets
 
 ```bash
-xp me         # default: 10 tweets
-xp me 20      # up to 100
+xp me                                      # default: 10 tweets
+xp me --limit 20                           # up to 100
+xp me --before 1234567890123456789         # older tweets (cursor-based)
+xp me --after 1234567890123456789          # newer tweets
+xp me --limit 20 --before 1234567890123456789
 ```
 
 > Requires a paid API plan (Pay-Per-Use or Basic).
@@ -155,6 +158,18 @@ xp me 20      # up to 100
 ```bash
 xp delete 1234567890123456789
 ```
+
+### Cache
+
+`xp get` and `xp me` automatically cache fetched tweets locally. Posting (`xp tweet` / `thread` / `reply`) also caches. This reduces paid API calls for previously fetched tweets.
+
+```bash
+xp cache list              # List all cached tweets
+xp cache show <tweet_id>   # Show a specific cached tweet
+xp cache clear             # Delete all cached tweets
+```
+
+Cache is stored at `~/.config/xp/cache/tweets.json`. `xp delete` also removes the corresponding cache entry.
 
 ### Upgrade
 
@@ -280,6 +295,7 @@ graph TD
     A --> GT[commands/get.ts]
     A --> M[commands/me.ts]
     A --> D[commands/delete.ts]
+    A --> CA[commands/cache.ts]
     A --> E[commands/config.ts]
     A --> F[commands/auth.ts]
     A --> U[commands/upgrade.ts]
@@ -297,14 +313,24 @@ graph TD
     F --> I
     E --> I
 
+    GT --> CS[lib/cache-store.ts<br/>Tweet Cache]
+    M --> CS
+    B --> CS
+    C --> CS
+    R --> CS
+    D --> CS
+    CA --> CS
+
     B --> J[lib/output.ts<br/>Output Formatter<br/>text / JSON]
     C --> J
     R --> J
     GT --> J
     M --> J
     D --> J
+    CA --> J
 
     I --> K[(~/.config/xp/config.json)]
+    CS --> KCS[(~/.config/xp/cache/tweets.json)]
     H --> L[WebCrypto API<br/>HMAC-SHA1]
     U --> GH[GitHub Releases API]
 ```

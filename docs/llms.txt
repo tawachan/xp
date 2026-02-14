@@ -16,9 +16,12 @@
 Post a tweet: `xp "Hello, world!"`
 Post a thread: `xp thread "First" "Second" "Third"`
 Reply to a tweet: `xp reply <tweet_id> "text"`
-Fetch a tweet: `xp get <tweet_id>`
-List your tweets: `xp me [limit]`
+Fetch a tweet: `xp get <tweet_id>` (cached locally, avoids repeat API calls)
+List your tweets: `xp me [--limit N] [--before <id>] [--after <id>]`
 Delete a tweet: `xp delete <tweet_id>`
+List cached tweets: `xp cache list`
+Show a cached tweet: `xp cache show <tweet_id>`
+Clear cache: `xp cache clear`
 Authenticate: `xp auth login`
 Log out: `xp auth logout`
 Upgrade: `xp upgrade`

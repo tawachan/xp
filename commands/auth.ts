@@ -8,14 +8,23 @@ const ACCESS_TOKEN_URL = "https://api.twitter.com/oauth/access_token";
 export async function authLoginCommand(): Promise<void> {
   const partial = await loadPartialConfig();
 
-  if (!partial.apiKey || !partial.apiSecret) {
-    throw new Error(
-      "API Key と API Secret が未設定です。先に設定してください:\n" +
-        "  xp config set --api-key=YOUR_KEY --api-secret=YOUR_SECRET",
-    );
-  }
+  let apiKey = partial.apiKey ?? "";
+  let apiSecret = partial.apiSecret ?? "";
 
-  const { apiKey, apiSecret } = partial;
+  if (!apiKey || !apiSecret) {
+    console.log("API Key が未設定です。Developer Portal で取得した値を入力してください:");
+    console.log("  https://developer.x.com/en/portal/dashboard\n");
+
+    if (!apiKey) {
+      apiKey = prompt("API Key:")?.trim() ?? "";
+    }
+    if (!apiSecret) {
+      apiSecret = prompt("API Secret:")?.trim() ?? "";
+    }
+    if (!apiKey || !apiSecret) {
+      throw new Error("API Key と API Secret は必須です");
+    }
+  }
 
   // Step 1: Request token
   console.log("認証を開始します...\n");

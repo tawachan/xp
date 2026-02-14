@@ -27,7 +27,6 @@ Config flags:
   --access-token-secret=VALUE
 
 Setup:
-  xp config set --api-key=xxx --api-secret=xxx
   xp auth login
 
 Examples:

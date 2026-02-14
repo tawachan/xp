@@ -40,22 +40,17 @@ deno task compile
 2. App permissions を **Read and Write** に設定
 3. **API Key** と **API Secret** を取得
 
-### 2. API Key を設定
-
-```bash
-xp config set --api-key=YOUR_API_KEY --api-secret=YOUR_API_SECRET
-```
-
-### 3. ブラウザで認証 (OAuth PIN フロー)
+### 2. 認証
 
 ```bash
 xp auth login
+# → API Key / API Secret を聞かれる (初回のみ)
 # → ブラウザが自動で開く → Xで「許可」→ PINを入力 → 完了！
 ```
 
-Access Token / Access Token Secret は自動で取得・保存されます。
+これだけでOKです。Access Token は自動で取得・保存されます。
 
-> **全部手動で設定したい場合**: `xp config set --api-key=xxx --api-secret=xxx --access-token=xxx --access-token-secret=xxx`
+> **非対話モード** (CI/エージェント向け): `xp config set --api-key=xxx --api-secret=xxx --access-token=xxx --access-token-secret=xxx`
 
 設定は `~/.config/xp/config.json` に保存されます (パーミッション 600)。
 

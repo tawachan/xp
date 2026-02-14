@@ -19,7 +19,31 @@ The official [twurl](https://github.com/twitter/twurl) is a generic API client (
 
 ## Installation
 
-### With Deno (recommended)
+### Download binary (recommended)
+
+Download the latest binary from [GitHub Releases](https://github.com/tawachan/xp/releases/latest):
+
+```bash
+# macOS (Apple Silicon)
+curl -fsSL https://github.com/tawachan/xp/releases/latest/download/xp-darwin-arm64 -o /usr/local/bin/xp
+chmod +x /usr/local/bin/xp
+
+# macOS (Intel)
+curl -fsSL https://github.com/tawachan/xp/releases/latest/download/xp-darwin-x64 -o /usr/local/bin/xp
+chmod +x /usr/local/bin/xp
+
+# Linux (x64)
+curl -fsSL https://github.com/tawachan/xp/releases/latest/download/xp-linux-x64 -o /usr/local/bin/xp
+chmod +x /usr/local/bin/xp
+
+# Linux (arm64)
+curl -fsSL https://github.com/tawachan/xp/releases/latest/download/xp-linux-arm64 -o /usr/local/bin/xp
+chmod +x /usr/local/bin/xp
+```
+
+No runtime dependencies required.
+
+### With Deno
 
 ```bash
 deno install -g --allow-net --allow-read --allow-write --allow-env --allow-run -n xp https://raw.githubusercontent.com/tawachan/xp/main/main.ts
@@ -31,7 +55,6 @@ deno install -g --allow-net --allow-read --allow-write --allow-env --allow-run -
 git clone https://github.com/tawachan/xp.git
 cd xp
 deno task compile
-# Produces ./xp binary — move it to your PATH
 sudo mv xp /usr/local/bin/
 ```
 

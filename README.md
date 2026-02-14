@@ -25,19 +25,19 @@ Download the latest binary from [GitHub Releases](https://github.com/tawachan/xp
 
 ```bash
 # macOS (Apple Silicon)
-curl -fsSL https://github.com/tawachan/xp/releases/latest/download/xp-darwin-arm64 -o /usr/local/bin/xp
+curl -fsSL -L https://github.com/tawachan/xp/releases/latest/download/xp-darwin-arm64 -o /usr/local/bin/xp
 chmod +x /usr/local/bin/xp
 
 # macOS (Intel)
-curl -fsSL https://github.com/tawachan/xp/releases/latest/download/xp-darwin-x64 -o /usr/local/bin/xp
+curl -fsSL -L https://github.com/tawachan/xp/releases/latest/download/xp-darwin-x64 -o /usr/local/bin/xp
 chmod +x /usr/local/bin/xp
 
 # Linux (x64)
-curl -fsSL https://github.com/tawachan/xp/releases/latest/download/xp-linux-x64 -o /usr/local/bin/xp
+curl -fsSL -L https://github.com/tawachan/xp/releases/latest/download/xp-linux-x64 -o /usr/local/bin/xp
 chmod +x /usr/local/bin/xp
 
 # Linux (arm64)
-curl -fsSL https://github.com/tawachan/xp/releases/latest/download/xp-linux-arm64 -o /usr/local/bin/xp
+curl -fsSL -L https://github.com/tawachan/xp/releases/latest/download/xp-linux-arm64 -o /usr/local/bin/xp
 chmod +x /usr/local/bin/xp
 ```
 

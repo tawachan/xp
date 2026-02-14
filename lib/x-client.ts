@@ -69,7 +69,17 @@ export async function getTweet(tweetId: string): Promise<TweetData> {
   return json.data;
 }
 
-export async function getMyTweets(maxResults = 10): Promise<TweetData[]> {
+export interface GetMyTweetsOptions {
+  maxResults?: number;
+  beforeId?: string;
+  afterId?: string;
+}
+
+export async function getMyTweets(options: GetMyTweetsOptions = {}): Promise<TweetData[]> {
+  const { maxResults = 10, beforeId, afterId } = options;
+  if (beforeId) validateTweetId(beforeId);
+  if (afterId) validateTweetId(afterId);
+
   const config = await loadConfig();
 
   // First get authenticated user ID
@@ -88,10 +98,12 @@ export async function getMyTweets(maxResults = 10): Promise<TweetData[]> {
 
   // Then get their tweets
   const tweetsUrl = `${BASE_URL}/users/${userId}/tweets`;
-  const params = {
+  const params: Record<string, string> = {
     "max_results": maxResults.toString(),
     "tweet.fields": "created_at",
   };
+  if (beforeId) params["until_id"] = beforeId;
+  if (afterId) params["since_id"] = afterId;
 
   const tweetsAuthHeader = await buildAuthHeader("GET", tweetsUrl, config, params);
   const queryString = new URLSearchParams(params).toString();

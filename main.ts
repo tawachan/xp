@@ -23,6 +23,8 @@ Usage:
   xp reply <tweet_id> <text>         Reply to a tweet
   xp get <tweet_id>                  Fetch a tweet by ID
   xp me [limit]                      List your recent tweets (default: 10)
+  xp me --before <tweet_id>          Fetch tweets older than the given ID
+  xp me --after <tweet_id>           Fetch tweets newer than the given ID
   xp delete <tweet_id>               Delete a tweet
   xp cache list                      List cached tweets
   xp cache show <tweet_id>           Show a cached tweet
@@ -59,6 +61,8 @@ Examples:
   xp reply 1234567890123456789 "Great thread!"
   xp get 1234567890123456789 --json
   xp me 20
+  xp me --before 1234567890123456789
+  xp me --after 1234567890123456789
   xp me --json
   xp delete 1234567890123456789
 `;
@@ -115,9 +119,26 @@ async function main(): Promise<void> {
       await getCommand(args[1], jsonFlag);
       break;
 
-    case "me":
-      await meCommand(args[1], jsonFlag);
+    case "me": {
+      const meArgs = args.slice(1);
+      let beforeId: string | undefined;
+      let afterId: string | undefined;
+      let limit: string | undefined;
+      for (let i = 0; i < meArgs.length; i++) {
+        if (meArgs[i] === "--before") {
+          beforeId = meArgs[++i];
+          if (!beforeId) throw new Error("Tweet ID is required: xp me --before <tweet_id>");
+        } else if (meArgs[i] === "--after") {
+          afterId = meArgs[++i];
+          if (!afterId) throw new Error("Tweet ID is required: xp me --after <tweet_id>");
+        } else {
+          limit = meArgs[i];
+        }
+      }
+      await meCommand({ limit, beforeId, afterId, json: jsonFlag });
       break;
+    }
+
 
     case "delete":
       if (!args[1]) {

@@ -64,8 +64,11 @@ url: https://x.com/i/status/1234567890123456789
 ### List your recent tweets (requires paid plan)
 
 ```bash
-xp me        # default: 10 tweets
-xp me 20     # up to 100
+xp me                                # default: 10 tweets
+xp me 20                             # up to 100
+xp me --before 1234567890123456789   # tweets older than this ID
+xp me --after 1234567890123456789    # tweets newer than this ID
+xp me 20 --before 1234567890123456789  # combine limit with cursor
 ```
 
 Output:

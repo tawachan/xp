@@ -29,12 +29,12 @@ export async function loadConfig(): Promise<XpConfig> {
     const text = await Deno.readTextFile(path);
     const config = JSON.parse(text) as XpConfig;
     if (!config.apiKey || !config.apiSecret || !config.accessToken || !config.accessTokenSecret) {
-      throw new Error("設定が不完全です。`xp config set` で再設定してください");
+      throw new Error("Config is incomplete. Run `xp config set` to reconfigure");
     }
     return config;
   } catch (e) {
     if (e instanceof Deno.errors.NotFound) {
-      throw new Error("設定が見つかりません。`xp config set` で初期設定してください");
+      throw new Error("Config not found. Run `xp auth login` to get started");
     }
     throw e;
   }
@@ -56,7 +56,7 @@ export async function deleteConfig(): Promise<void> {
     await Deno.remove(path);
   } catch (e) {
     if (e instanceof Deno.errors.NotFound) {
-      throw new Error("設定ファイルが見つかりません（すでにログアウト済み）");
+      throw new Error("Config not found (already logged out)");
     }
     throw e;
   }

@@ -58,6 +58,21 @@ deno task compile
 sudo mv xp /usr/local/bin/
 ```
 
+### Shell completions
+
+Enable Tab completion for subcommands and flags:
+
+```bash
+# Fish
+xp completions fish > ~/.config/fish/completions/xp.fish
+
+# Bash
+xp completions bash >> ~/.bashrc && source ~/.bashrc
+
+# Zsh
+xp completions zsh > "${fpath[1]}/_xp" && compinit
+```
+
 ## Getting Started
 
 ### 1. Create an app on the X Developer Portal

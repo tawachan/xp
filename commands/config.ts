@@ -27,21 +27,21 @@ export async function configSetCommand(args: string[]): Promise<void> {
     };
   } else {
     // Interactive mode
-    console.log("X API 設定を入力してください (Developer Portal で取得):\n");
+    console.log("Enter your X API credentials (from Developer Portal):\n");
     const apiKey = prompt("API Key:") ?? "";
     const apiSecret = prompt("API Secret:") ?? "";
     const accessToken = prompt("Access Token:") ?? "";
     const accessTokenSecret = prompt("Access Token Secret:") ?? "";
 
     if (!apiKey || !apiSecret || !accessToken || !accessTokenSecret) {
-      throw new Error("すべての値を入力してください");
+      throw new Error("All fields are required");
     }
 
     config = { apiKey, apiSecret, accessToken, accessTokenSecret };
   }
 
   await saveConfig(config);
-  console.log("設定を保存しました");
+  console.log("Config saved");
 }
 
 export async function configShowCommand(): Promise<void> {

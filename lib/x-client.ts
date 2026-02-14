@@ -51,19 +51,19 @@ async function handleApiError(res: Response): Promise<void> {
   if (res.ok) return;
 
   if (res.status === 401) {
-    throw new Error("認証に失敗しました。`xp config set` でAPI設定を確認してください");
+    throw new Error("Authentication failed. Run `xp auth login` to reconfigure");
   }
   if (res.status === 403) {
     throw new Error(
-      "権限が不足しています。Developer PortalでRead and Write権限を確認してください",
+      "Permission denied. Ensure your app has Read and Write access in the Developer Portal",
     );
   }
   if (res.status === 429) {
     const resetTime = res.headers.get("x-rate-limit-reset");
     const resetDate = resetTime
       ? new Date(parseInt(resetTime) * 1000).toLocaleTimeString()
-      : "不明";
-    throw new Error(`レート制限に達しました。リセット時刻: ${resetDate}`);
+      : "unknown";
+    throw new Error(`Rate limit exceeded. Resets at ${resetDate}`);
   }
 
   const body = await res.text();

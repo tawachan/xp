@@ -1,5 +1,5 @@
 import { buildAuthHeader } from "../lib/oauth.ts";
-import { loadPartialConfig, saveConfig } from "../lib/config-store.ts";
+import { deleteConfig, loadPartialConfig, saveConfig } from "../lib/config-store.ts";
 
 const REQUEST_TOKEN_URL = "https://api.twitter.com/oauth/request_token";
 const AUTHORIZE_URL = "https://api.twitter.com/oauth/authorize";
@@ -131,4 +131,9 @@ export async function authLoginCommand(): Promise<void> {
 
   console.log(`\n認証が完了しました！ (@${screenName ?? "unknown"})`);
   console.log("設定は ~/.config/xp/config.json に保存されました");
+}
+
+export async function authLogoutCommand(): Promise<void> {
+  await deleteConfig();
+  console.log("ログアウトしました（設定ファイルを削除しました）");
 }

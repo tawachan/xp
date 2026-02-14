@@ -50,6 +50,18 @@ export async function loadPartialConfig(): Promise<Partial<XpConfig>> {
   }
 }
 
+export async function deleteConfig(): Promise<void> {
+  const path = getConfigPath();
+  try {
+    await Deno.remove(path);
+  } catch (e) {
+    if (e instanceof Deno.errors.NotFound) {
+      throw new Error("設定ファイルが見つかりません（すでにログアウト済み）");
+    }
+    throw e;
+  }
+}
+
 export async function saveConfig(config: XpConfig): Promise<void> {
   const dir = getConfigDir();
   await Deno.mkdir(dir, { recursive: true });

@@ -14,6 +14,7 @@ The official [twurl](https://github.com/twitter/twurl) is a generic API client (
 |---|---|---|
 | Post a tweet | `twurl -X POST -H api.twitter.com "/2/tweets" -d '{"text":"Hello"}'` | `xp "Hello"` |
 | Thread | Manually chain reply IDs | `xp thread "1" "2" "3"` |
+| JSON output | Parse raw response yourself | `xp me --json \| jq` |
 | Runtime | Ruby | Single binary (zero deps) |
 | Maintained | Last release 2020 | Active |
 
@@ -118,11 +119,42 @@ xp thread "First tweet" "Second tweet" "Third tweet"
 
 Each tweet is automatically posted as a reply to the previous one.
 
+### Reply to a tweet
+
+```bash
+xp reply 1234567890123456789 "Great thread!"
+```
+
+### Fetch a tweet
+
+```bash
+xp get 1234567890123456789
+```
+
+> Requires X API Basic plan ($200/month). Free plan only supports posting.
+
+### List your recent tweets
+
+```bash
+xp me         # default: 10 tweets
+xp me 20      # up to 100
+```
+
+> Requires X API Basic plan ($200/month). Free plan only supports posting.
+
 ### Delete a tweet
 
 ```bash
 xp delete 1234567890123456789
 ```
+
+### Upgrade
+
+```bash
+xp upgrade
+```
+
+Downloads and installs the latest release from GitHub.
 
 ### Manage credentials
 
@@ -140,27 +172,33 @@ xp version
 
 ## Output Format
 
-xp outputs machine-readable text, making it easy to use from scripts and AI agents:
+xp outputs machine-readable text by default, making it easy to use from scripts and AI agents:
 
 ```
 tweet_id: 1234567890123456789
 url: https://x.com/i/status/1234567890123456789
 ```
 
-Thread output:
+### JSON output
 
+Add `--json` to any command for JSON output:
+
+```bash
+xp "Hello" --json
+# {"tweet_id":"1234567890123456789","url":"https://x.com/i/status/1234567890123456789"}
+
+xp me --json
+# [{"tweet_id":"123...","text":"Hello","created_at":"...","url":"..."},...]
+
+xp me --json | jq '.[0].text'
+# "Hello"
 ```
-[1/3]
-tweet_id: 1234567890123456789
-url: https://x.com/i/status/1234567890123456789
 
-[2/3]
-tweet_id: 1234567890123456790
-url: https://x.com/i/status/1234567890123456790
+Errors with `--json` also output JSON to stderr:
 
-[3/3]
-tweet_id: 1234567890123456791
-url: https://x.com/i/status/1234567890123456791
+```bash
+xp get invalid --json
+# {"error":"Invalid tweet ID: \"invalid\" (must be a numeric ID)"}
 ```
 
 ## How It Works
@@ -228,14 +266,21 @@ sequenceDiagram
 
 ```mermaid
 graph TD
-    A[main.ts<br/>Command Router] --> B[commands/tweet.ts]
+    A[main.ts<br/>Command Router<br/>--json flag] --> B[commands/tweet.ts]
     A --> C[commands/thread.ts]
+    A --> R[commands/reply.ts]
+    A --> GT[commands/get.ts]
+    A --> M[commands/me.ts]
     A --> D[commands/delete.ts]
     A --> E[commands/config.ts]
     A --> F[commands/auth.ts]
+    A --> U[commands/upgrade.ts]
 
     B --> G[lib/x-client.ts<br/>X API v2 Client]
     C --> G
+    R --> G
+    GT --> G
+    M --> G
     D --> G
     F --> H[lib/oauth.ts<br/>OAuth 1.0a Signatures]
 
@@ -244,12 +289,16 @@ graph TD
     F --> I
     E --> I
 
-    B --> J[lib/output.ts<br/>Output Formatter]
+    B --> J[lib/output.ts<br/>Output Formatter<br/>text / JSON]
     C --> J
+    R --> J
+    GT --> J
+    M --> J
     D --> J
 
     I --> K[(~/.config/xp/config.json)]
     H --> L[WebCrypto API<br/>HMAC-SHA1]
+    U --> GH[GitHub Releases API]
 ```
 
 ## Technical Details

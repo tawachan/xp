@@ -102,19 +102,56 @@ error: Authentication failed. Run `xp auth login` to reconfigure
 ```
 
 Common errors:
+- `Invalid tweet ID` → must be a numeric ID
 - `Config not found` → credentials not set up
 - `Authentication failed` → invalid or expired tokens
 - `Permission denied` → app needs Read and Write access
+- `Not found` → tweet deleted or ID is invalid
+- `Bad request` → malformed request (details included)
 - `This feature requires X API Basic plan` → `get`/`me` need paid plan ($200/month)
 - `Rate limit exceeded` → wait until reset time shown
 - `Text is too long` → tweet exceeds 280 characters
 
+### JSON output
+
+Add `--json` to any command for structured JSON output:
+
+```bash
+xp "Hello" --json
+```
+
+```json
+{"tweet_id":"1234567890123456789","url":"https://x.com/i/status/1234567890123456789"}
+```
+
+```bash
+xp me --json
+```
+
+```json
+[{"tweet_id":"123","text":"Hello","created_at":"2024-01-15T10:30:00.000Z","url":"https://x.com/i/status/123"}]
+```
+
+Errors with `--json` also output JSON to stderr:
+
+```json
+{"error":"Invalid tweet ID: \"abc\" (must be a numeric ID)"}
+```
+
+### Upgrade
+
+```bash
+xp upgrade
+```
+
 ### Tips for agents
 
+- Use `--json` for reliable parsing (recommended over text format)
 - Always check exit code (0 = success, 1 = error)
-- Parse `tweet_id:` from output to reference posted tweets
+- Parse `tweet_id` from JSON output to reference posted tweets
 - Use `xp delete <tweet_id>` to clean up test tweets
 - 280 character limit per tweet; use `xp thread` for longer content
+- Tweet IDs must be numeric; invalid IDs are rejected before API call
 - Config is stored at `~/.config/xp/config.json`
 
 ## Development
@@ -128,7 +165,7 @@ deno task compile        # Compile to binary
 ## Project Structure
 
 - `main.ts` - Entry point, command routing
-- `commands/` - Command implementations (tweet, thread, reply, get, me, delete, config, auth, completions)
+- `commands/` - Command implementations (tweet, thread, reply, get, me, delete, config, auth, upgrade, completions)
 - `lib/oauth.ts` - OAuth 1.0a signatures (WebCrypto API, zero npm deps)
 - `lib/x-client.ts` - X API v2 HTTP client
 - `lib/config-store.ts` - Config file management (~/.config/xp/config.json)

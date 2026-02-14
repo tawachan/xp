@@ -3,10 +3,19 @@ import { loadConfig } from "./config-store.ts";
 
 const BASE_URL = "https://api.x.com/2";
 
+export function validateTweetId(tweetId: string): void {
+  if (!/^\d+$/.test(tweetId)) {
+    throw new Error(`Invalid tweet ID: "${tweetId}" (must be a numeric ID)`);
+  }
+}
+
 export async function postTweet(
   text: string,
   replyToId?: string,
 ): Promise<{ id: string }> {
+  if (replyToId) {
+    validateTweetId(replyToId);
+  }
   const config = await loadConfig();
   const url = `${BASE_URL}/tweets`;
 
@@ -39,6 +48,7 @@ export interface TweetData {
 }
 
 export async function getTweet(tweetId: string): Promise<TweetData> {
+  validateTweetId(tweetId);
   const config = await loadConfig();
   const url = `${BASE_URL}/tweets/${tweetId}`;
   const params = { "tweet.fields": "created_at,author_id" };
@@ -96,6 +106,7 @@ export async function getMyTweets(maxResults = 10): Promise<TweetData[]> {
 }
 
 export async function deleteTweet(tweetId: string): Promise<void> {
+  validateTweetId(tweetId);
   const config = await loadConfig();
   const url = `${BASE_URL}/tweets/${tweetId}`;
 
@@ -111,12 +122,30 @@ export async function deleteTweet(tweetId: string): Promise<void> {
   await handleApiError(res, "write");
 }
 
+async function parseErrorDetail(res: Response): Promise<string> {
+  try {
+    const body = await res.text();
+    const json = JSON.parse(body);
+    // X API v2 error format: { detail: "...", title: "...", ... }
+    if (json.detail) return json.detail;
+    // Alternative format: { errors: [{ message: "..." }] }
+    if (json.errors?.[0]?.message) return json.errors[0].message;
+    return body;
+  } catch {
+    return "Unknown error";
+  }
+}
+
 async function handleApiError(
   res: Response,
   operation: "read" | "write" = "write",
 ): Promise<void> {
   if (res.ok) return;
 
+  if (res.status === 400) {
+    const detail = await parseErrorDetail(res);
+    throw new Error(`Bad request: ${detail}`);
+  }
   if (res.status === 401) {
     throw new Error("Authentication failed. Run `xp auth login` to reconfigure");
   }
@@ -132,6 +161,9 @@ async function handleApiError(
       "Permission denied. Ensure your app has Read and Write access in the Developer Portal",
     );
   }
+  if (res.status === 404) {
+    throw new Error("Not found. The tweet may have been deleted or the ID is invalid");
+  }
   if (res.status === 429) {
     const resetTime = res.headers.get("x-rate-limit-reset");
     const resetDate = resetTime
@@ -140,6 +172,6 @@ async function handleApiError(
     throw new Error(`Rate limit exceeded. Resets at ${resetDate}`);
   }
 
-  const body = await res.text();
-  throw new Error(`API error (${res.status}): ${body}`);
+  const detail = await parseErrorDetail(res);
+  throw new Error(`API error (${res.status}): ${detail}`);
 }

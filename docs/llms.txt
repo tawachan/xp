@@ -15,11 +15,19 @@
 
 Post a tweet: `xp "Hello, world!"`
 Post a thread: `xp thread "First" "Second" "Third"`
+Reply to a tweet: `xp reply <tweet_id> "text"`
+Fetch a tweet: `xp get <tweet_id>`
+List your tweets: `xp me [limit]`
 Delete a tweet: `xp delete <tweet_id>`
 Authenticate: `xp auth login`
 Log out: `xp auth logout`
+Upgrade: `xp upgrade`
 Show config: `xp config show`
 Set config (non-interactive): `xp config set --api-key=KEY --api-secret=SECRET --access-token=TOKEN --access-token-secret=TOKEN_SECRET`
+
+Add `--json` to any command for JSON output: `xp me --json | jq '.[0].text'`
+
+Note: `get` and `me` require X API Basic plan ($200/month). Free plan supports posting only.
 
 ## Output Format
 
@@ -27,6 +35,11 @@ Success (exit code 0):
 ```
 tweet_id: 1234567890123456789
 url: https://x.com/i/status/1234567890123456789
+```
+
+JSON (with --json flag):
+```
+{"tweet_id":"1234567890123456789","url":"https://x.com/i/status/1234567890123456789"}
 ```
 
 Error (exit code 1, stderr):

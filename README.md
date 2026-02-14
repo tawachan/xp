@@ -85,7 +85,7 @@ xp completions zsh > "${fpath[1]}/_xp" && compinit
 ### 1. Create an app on the X Developer Portal
 
 1. Go to [Developer Portal](https://developer.x.com/en/portal/dashboard)
-2. Create a new app (Free tier is fine — 1,500 tweets/month)
+2. Create a new app (Free tier is fine — 500 posts/month)
 3. Set App permissions to **Read and Write**
 4. Copy your **API Key** and **API Secret**
 
@@ -327,6 +327,12 @@ deno task check
 # Compile to binary
 deno task compile
 ```
+
+## Notes on Automation & AI Agents
+
+- If you run xp from a cron job, CI/CD pipeline, or AI agent as an automated bot, X requires your account's bio to state that it is a bot and who operates it.
+- Automated replies using AI (e.g., an AI agent calling `xp reply`) may require prior written approval from X. See [X's automation rules](https://help.x.com/en/rules-and-policies/x-automation).
+- Human-initiated usage (including asking an AI assistant to post on your behalf) is fine under standard API terms.
 
 ## Contributing
 

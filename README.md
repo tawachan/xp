@@ -328,15 +328,24 @@ deno task check
 deno task compile
 ```
 
-## Notes on Automation & AI Agents
+## Automation & AI Agents
 
-- If you run xp from a cron job, CI/CD pipeline, or AI agent as an automated bot, X requires your account's bio to state that it is a bot and who operates it.
-- Automated replies using AI (e.g., an AI agent calling `xp reply`) may require prior written approval from X. See [X's automation rules](https://help.x.com/en/rules-and-policies/x-automation).
-- Human-initiated usage (including asking an AI assistant to post on your behalf) is fine under standard API terms.
+xp can be used from scripts, CI/CD pipelines, and AI agents (like Claude Code). Please follow X's policies:
+
+- **Bot accounts**: If your account primarily posts via automation, X requires your profile bio to disclose it is a bot and who operates it.
+- **AI reply bots**: Automated replies using AI (e.g., an AI agent calling `xp reply` without human review) may require [prior written approval from X](https://help.x.com/en/rules-and-policies/x-automation).
+- **Human-initiated use**: Asking an AI assistant to compose and post a tweet on your behalf is fine under standard API terms.
+- **Spam**: Do not use xp for spam, trend manipulation, or coordinated inauthentic behavior. See [X's automation rules](https://help.x.com/en/rules-and-policies/x-automation).
 
 ## Contributing
 
 Contributions are welcome! Please open an issue or submit a pull request.
+
+## Disclaimer
+
+xp is an independent open-source project. It is not affiliated with, endorsed by, or sponsored by X Corp.
+Use of this tool is subject to [X's Developer Agreement and Policy](https://developer.x.com/en/developer-terms/agreement-and-policy).
+Users are responsible for ensuring their use complies with X's terms of service and applicable laws.
 
 ## License
 

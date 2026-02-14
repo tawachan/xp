@@ -142,9 +142,9 @@ sequenceDiagram
     U->>X: xp thread "1つ目" "2つ目" "3つ目"
     X->>A: POST /2/tweets {"text":"1つ目"}
     A-->>X: id: aaa
-    X->>A: POST /2/tweets {"text":"2つ目", reply: {in_reply_to: aaa}}
+    X->>A: POST /2/tweets {"text":"2つ目", reply: {in_reply_to_tweet_id: aaa}}
     A-->>X: id: bbb
-    X->>A: POST /2/tweets {"text":"3つ目", reply: {in_reply_to: bbb}}
+    X->>A: POST /2/tweets {"text":"3つ目", reply: {in_reply_to_tweet_id: bbb}}
     A-->>X: id: ccc
     X-->>U: [1/3] tweet_id: aaa<br/>[2/3] tweet_id: bbb<br/>[3/3] tweet_id: ccc
 ```

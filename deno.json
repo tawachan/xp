@@ -1,8 +1,8 @@
 {
   "tasks": {
-    "dev": "deno run --allow-net --allow-read --allow-write --allow-env main.ts",
+    "dev": "deno run --allow-net --allow-read --allow-write --allow-env --allow-run main.ts",
     "check": "deno check main.ts",
-    "compile": "deno compile --allow-net --allow-read --allow-write --allow-env --output xp main.ts"
+    "compile": "deno compile --allow-net --allow-read --allow-write --allow-env --allow-run --output xp main.ts"
   },
   "compilerOptions": {
     "strict": true,

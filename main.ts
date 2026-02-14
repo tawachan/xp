@@ -2,7 +2,7 @@ import { tweetCommand } from "./commands/tweet.ts";
 import { threadCommand } from "./commands/thread.ts";
 import { deleteCommand } from "./commands/delete.ts";
 import { configSetCommand, configShowCommand } from "./commands/config.ts";
-import { authLoginCommand } from "./commands/auth.ts";
+import { authLoginCommand, authLogoutCommand } from "./commands/auth.ts";
 import { formatError } from "./lib/output.ts";
 
 const VERSION = "0.1.0";
@@ -15,6 +15,7 @@ Usage:
   xp thread <text1> <text2> ...      Post a thread
   xp delete <tweet_id>               Delete a tweet
   xp auth login                       Authenticate via browser (OAuth PIN flow)
+  xp auth logout                      Remove saved credentials
   xp config set [flags]              Set API credentials
   xp config show                     Show current config
   xp help                            Show this help
@@ -27,7 +28,6 @@ Config flags:
   --access-token-secret=VALUE
 
 Setup:
-  xp config set --api-key=xxx --api-secret=xxx
   xp auth login
 
 Examples:
@@ -81,8 +81,10 @@ async function main(): Promise<void> {
     case "auth":
       if (args[1] === "login") {
         await authLoginCommand();
+      } else if (args[1] === "logout") {
+        await authLogoutCommand();
       } else {
-        throw new Error("使い方: xp auth login");
+        throw new Error("使い方: xp auth login | xp auth logout");
       }
       break;
 

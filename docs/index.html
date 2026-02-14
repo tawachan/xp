@@ -1,173 +1,339 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>xp - X (Twitter) CLI Tool</title>
+  <meta name="description" content="A personal CLI for everyday tweeting — post, thread, reply, and manage your tweets from the terminal.">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            bg: { DEFAULT: '#0a0a0a', card: '#111111', hover: '#1a1a1a' },
+            border: { DEFAULT: '#1e1e1e', hover: '#333333' },
+            accent: { DEFAULT: '#22d3ee', dark: '#0891b2', light: '#67e8f9' },
+            muted: '#888888',
+          },
+          fontFamily: {
+            mono: ['"SF Mono"', '"Fira Code"', '"Cascadia Code"', 'monospace'],
+          },
+        },
+      },
+    }
+  </script>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; color: #e6edf3; background: #0d1117; line-height: 1.6; }
-    .container { max-width: 760px; margin: 0 auto; padding: 80px 24px; }
-    h1 { font-size: 3rem; font-weight: 800; margin-bottom: 8px; }
-    .tagline { font-size: 1.25rem; color: #8b949e; margin-bottom: 48px; }
-    .hero-code { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 20px 24px; font-family: "SF Mono", "Fira Code", monospace; font-size: 1.1rem; margin-bottom: 48px; color: #7ee787; }
-    .hero-code .prompt { color: #8b949e; }
-    .hero-code .comment { color: #484f58; }
-    h2 { font-size: 1.5rem; margin: 48px 0 16px; color: #f0f6fc; }
-    .install-tabs { display: flex; gap: 0; margin-bottom: 0; }
-    .install-tab { padding: 8px 20px; font-size: 0.9rem; color: #8b949e; background: #0d1117; border: 1px solid #30363d; border-bottom: none; cursor: pointer; transition: color 0.2s, background 0.2s; }
-    .install-tab:first-child { border-radius: 8px 0 0 0; }
-    .install-tab:last-child { border-radius: 0 8px 0 0; }
-    .install-tab.active { color: #f0f6fc; background: #161b22; border-bottom-color: #161b22; }
-    .install-panel { display: none; background: #161b22; border: 1px solid #30363d; border-radius: 0 8px 8px 8px; padding: 20px 24px; font-family: monospace; font-size: 0.9rem; color: #c9d1d9; margin-bottom: 24px; }
-    .install-panel.active { display: block; }
-    .install-panel .cmd { color: #7ee787; }
-    .install-panel .note { color: #8b949e; font-size: 0.85rem; margin-top: 12px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
-    .usage-section { margin-top: 16px; }
-    .usage-item { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 16px 20px; margin-bottom: 8px; }
-    .usage-item .cmd { font-family: monospace; font-size: 0.95rem; color: #7ee787; }
-    .usage-item .desc { font-size: 0.85rem; color: #8b949e; margin-top: 4px; }
-    .features { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
-    .feature { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 20px; }
-    .feature h3 { font-size: 1rem; margin-bottom: 8px; color: #f0f6fc; }
-    .feature p { font-size: 0.9rem; color: #8b949e; }
-    .feature code { background: #1c2128; padding: 2px 6px; border-radius: 4px; font-size: 0.85rem; color: #7ee787; }
-    .links { margin-top: 48px; display: flex; gap: 16px; flex-wrap: wrap; }
-    .links a { color: #58a6ff; text-decoration: none; font-size: 1rem; padding: 10px 20px; border: 1px solid #30363d; border-radius: 8px; transition: border-color 0.2s; }
-    .links a:hover { border-color: #58a6ff; }
-    footer { margin-top: 80px; color: #484f58; font-size: 0.85rem; }
-    footer a { color: #58a6ff; text-decoration: none; }
-    @media (max-width: 600px) { .features { grid-template-columns: 1fr; } h1 { font-size: 2rem; } .install-tab { padding: 6px 12px; font-size: 0.8rem; } }
+    body { background: #0a0a0a; }
+    .gradient-text {
+      background: linear-gradient(135deg, #22d3ee 0%, #818cf8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero-glow {
+      position: absolute;
+      top: -200px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 600px;
+      height: 400px;
+      background: radial-gradient(ellipse, rgba(34,211,238,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .code-block::-webkit-scrollbar { height: 4px; }
+    .code-block::-webkit-scrollbar-track { background: transparent; }
+    .code-block::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
   </style>
 </head>
-<body>
-  <div class="container">
-    <h1>xp</h1>
-    <p class="tagline">A personal CLI for everyday tweeting — post, thread, reply, and manage your tweets from the terminal.</p>
+<body class="text-gray-300 antialiased">
 
-    <div class="hero-code">
-      <span class="prompt">$</span> xp "Hello, world!"<br>
-      tweet_id: 1893684025138438386<br>
-      url: https://x.com/i/status/1893684025138438386
+  <!-- Sticky Header -->
+  <header class="fixed top-0 left-0 right-0 z-50 border-b border-border bg-bg/80 backdrop-blur-md">
+    <div class="mx-auto max-w-5xl flex items-center justify-between px-6 h-14">
+      <a href="#" class="text-xl font-bold text-white tracking-tight font-mono">xp</a>
+      <div class="flex items-center gap-3">
+        <a href="https://github.com/tawachan/xp" target="_blank" rel="noopener"
+           class="text-muted hover:text-white transition-colors p-2" aria-label="GitHub">
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+        </a>
+        <a href="#install"
+           class="bg-accent hover:bg-accent-dark text-black font-semibold text-sm px-4 py-1.5 rounded-md transition-colors">
+          Install
+        </a>
+      </div>
     </div>
+  </header>
 
-    <h2>Install</h2>
+  <main>
 
-    <div class="install-tabs">
-      <div class="install-tab active" onclick="showTab('brew')">Homebrew</div>
-      <div class="install-tab" onclick="showTab('curl')">curl</div>
-      <div class="install-tab" onclick="showTab('deno')">Deno</div>
-      <div class="install-tab" onclick="showTab('source')">Source</div>
-    </div>
+    <!-- Hero -->
+    <section class="relative pt-32 pb-20 sm:pt-40 sm:pb-28">
+      <div class="hero-glow"></div>
+      <div class="mx-auto max-w-3xl px-6 text-center relative">
+        <h1 class="text-5xl sm:text-7xl font-extrabold tracking-tight text-white mb-4">
+          <span class="gradient-text">xp</span>
+        </h1>
+        <p class="text-lg sm:text-xl text-muted max-w-xl mx-auto mb-10">
+          A personal CLI for everyday tweeting — post, thread, reply, and manage your tweets from the terminal.
+        </p>
 
-    <div id="tab-brew" class="install-panel active">
-      <span class="cmd">brew install tawachan/tap/xp</span>
-      <div class="note">macOS and Linux. Update with <code style="color:#7ee787">brew upgrade xp</code>.</div>
-    </div>
-    <div id="tab-curl" class="install-panel">
-      <span class="comment" style="color:#484f58"># macOS (Apple Silicon)</span><br>
-      <span class="cmd">curl -fsSL -L https://github.com/tawachan/xp/releases/latest/download/xp-darwin-arm64 -o /usr/local/bin/xp && chmod +x /usr/local/bin/xp</span><br><br>
-      <span class="comment" style="color:#484f58"># macOS (Intel)</span><br>
-      <span class="cmd">curl -fsSL -L https://github.com/tawachan/xp/releases/latest/download/xp-darwin-x64 -o /usr/local/bin/xp && chmod +x /usr/local/bin/xp</span><br><br>
-      <span class="comment" style="color:#484f58"># Linux (x64)</span><br>
-      <span class="cmd">curl -fsSL -L https://github.com/tawachan/xp/releases/latest/download/xp-linux-x64 -o /usr/local/bin/xp && chmod +x /usr/local/bin/xp</span><br><br>
-      <span class="comment" style="color:#484f58"># Linux (arm64)</span><br>
-      <span class="cmd">curl -fsSL -L https://github.com/tawachan/xp/releases/latest/download/xp-linux-arm64 -o /usr/local/bin/xp && chmod +x /usr/local/bin/xp</span>
-      <div class="note">Update with <code style="color:#7ee787">xp upgrade</code>.</div>
-    </div>
-    <div id="tab-deno" class="install-panel">
-      <span class="cmd">deno install -g --allow-net --allow-read --allow-write --allow-env --allow-run -n xp https://raw.githubusercontent.com/tawachan/xp/main/main.ts</span>
-      <div class="note">Requires <a href="https://deno.com" style="color:#58a6ff">Deno 2.x</a>.</div>
-    </div>
-    <div id="tab-source" class="install-panel">
-      <span class="cmd">git clone https://github.com/tawachan/xp.git && cd xp && deno task compile && sudo mv xp /usr/local/bin/</span>
-      <div class="note">Requires <a href="https://deno.com" style="color:#58a6ff">Deno 2.x</a>.</div>
-    </div>
+        <!-- Terminal code block -->
+        <div class="relative mx-auto max-w-lg text-left">
+          <div class="bg-bg-card border border-border rounded-lg overflow-hidden">
+            <div class="flex items-center gap-1.5 px-4 py-2.5 border-b border-border">
+              <span class="w-3 h-3 rounded-full bg-[#ff5f57]"></span>
+              <span class="w-3 h-3 rounded-full bg-[#febc2e]"></span>
+              <span class="w-3 h-3 rounded-full bg-[#28c840]"></span>
+              <span class="ml-3 text-xs text-muted font-mono">terminal</span>
+            </div>
+            <div class="p-5 font-mono text-sm leading-relaxed code-block overflow-x-auto">
+              <div>
+                <span class="text-muted">$</span>
+                <span class="text-white"> xp </span><span class="text-accent">"Hello, world!"</span>
+              </div>
+              <div class="mt-2 text-gray-500">tweet_id: 1893684025138438386</div>
+              <div class="text-gray-500">url: https://x.com/i/status/1893684025138438386</div>
+            </div>
+          </div>
+          <button onclick="copyHeroCode()"
+                  class="absolute top-2.5 right-3 text-muted hover:text-white transition-colors p-1"
+                  title="Copy" id="hero-copy-btn">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          </button>
+        </div>
 
-    <h2>Setup</h2>
-    <div class="hero-code" style="margin-bottom:16px">
-      <span class="prompt">$</span> xp auth login<br>
-      <span class="comment"># 1. Enter your API Key &amp; Secret from the Developer Portal</span><br>
-      <span class="comment"># 2. Authorize in browser</span><br>
-      <span class="comment"># 3. Enter the PIN</span><br>
-      <span class="comment"># Done!</span>
-    </div>
-    <p style="color:#8b949e; font-size:0.9rem;">Get your API keys from the <a href="https://developer.x.com/en/portal/dashboard" style="color:#58a6ff">X Developer Portal</a>. <a href="https://docs.x.com/x-api/getting-started/pricing" style="color:#58a6ff">Pay-Per-Use</a> pricing recommended.</p>
+        <div class="mt-10">
+          <a href="#install"
+             class="inline-flex items-center gap-2 bg-accent hover:bg-accent-dark text-black font-semibold px-6 py-2.5 rounded-lg transition-colors text-sm">
+            Get Started
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"/></svg>
+          </a>
+        </div>
+      </div>
+    </section>
 
-    <h2>Usage</h2>
-    <div class="usage-section">
-      <div class="usage-item">
-        <div class="cmd">xp "Hello from xp!"</div>
-        <div class="desc">Post a tweet. Or use <code style="color:#7ee787">xp tweet "text"</code>.</div>
+    <!-- Features -->
+    <section class="py-20" id="features">
+      <div class="mx-auto max-w-5xl px-6">
+        <h2 class="text-2xl sm:text-3xl font-bold text-white text-center mb-12">Features</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+
+          <div class="group bg-bg-card border border-border rounded-lg p-6 hover:border-accent/40 transition-colors">
+            <div class="text-2xl mb-3">&#9889;</div>
+            <h3 class="text-white font-semibold mb-2">Simple</h3>
+            <p class="text-sm text-muted">Just <code class="text-accent text-xs bg-bg px-1.5 py-0.5 rounded">xp "text"</code>. No API paths, no JSON payloads.</p>
+          </div>
+
+          <div class="group bg-bg-card border border-border rounded-lg p-6 hover:border-accent/40 transition-colors">
+            <div class="text-2xl mb-3">&#128279;</div>
+            <h3 class="text-white font-semibold mb-2">Threads</h3>
+            <p class="text-sm text-muted"><code class="text-accent text-xs bg-bg px-1.5 py-0.5 rounded">xp thread "1" "2" "3"</code> — auto reply chain.</p>
+          </div>
+
+          <div class="group bg-bg-card border border-border rounded-lg p-6 hover:border-accent/40 transition-colors">
+            <div class="text-2xl mb-3">&#128172;</div>
+            <h3 class="text-white font-semibold mb-2">Read &amp; Reply</h3>
+            <p class="text-sm text-muted"><code class="text-accent text-xs bg-bg px-1.5 py-0.5 rounded">xp get</code>, <code class="text-accent text-xs bg-bg px-1.5 py-0.5 rounded">xp me</code>, <code class="text-accent text-xs bg-bg px-1.5 py-0.5 rounded">xp reply</code> for full workflow.</p>
+          </div>
+
+          <div class="group bg-bg-card border border-border rounded-lg p-6 hover:border-accent/40 transition-colors">
+            <div class="text-2xl mb-3">&#123;&#125;</div>
+            <h3 class="text-white font-semibold mb-2">JSON output</h3>
+            <p class="text-sm text-muted"><code class="text-accent text-xs bg-bg px-1.5 py-0.5 rounded">--json</code> flag on any command. Pipe to <code class="text-accent text-xs bg-bg px-1.5 py-0.5 rounded">jq</code>.</p>
+          </div>
+
+          <div class="group bg-bg-card border border-border rounded-lg p-6 hover:border-accent/40 transition-colors">
+            <div class="text-2xl mb-3">&#129302;</div>
+            <h3 class="text-white font-semibold mb-2">Agent-friendly</h3>
+            <p class="text-sm text-muted">Machine-readable output, non-interactive flags, exit codes.</p>
+          </div>
+
+          <div class="group bg-bg-card border border-border rounded-lg p-6 hover:border-accent/40 transition-colors">
+            <div class="text-2xl mb-3">&#128230;</div>
+            <h3 class="text-white font-semibold mb-2">Zero deps</h3>
+            <p class="text-sm text-muted">Single binary. OAuth 1.0a via WebCrypto. <code class="text-accent text-xs bg-bg px-1.5 py-0.5 rounded">xp upgrade</code> to update.</p>
+          </div>
+
+        </div>
       </div>
-      <div class="usage-item">
-        <div class="cmd">xp thread "First" "Second" "Third"</div>
-        <div class="desc">Post a thread. Each tweet auto-replies to the previous one.</div>
+    </section>
+
+    <!-- Install -->
+    <section class="py-20" id="install">
+      <div class="mx-auto max-w-3xl px-6">
+        <h2 class="text-2xl sm:text-3xl font-bold text-white text-center mb-12">Install</h2>
+
+        <!-- Tabs -->
+        <div class="flex border-b border-border mb-0">
+          <button class="install-tab active px-5 py-2.5 text-sm font-medium text-muted hover:text-white border-b-2 border-transparent transition-colors -mb-px"
+                  onclick="showTab('brew', this)" data-tab="brew">Homebrew</button>
+          <button class="install-tab px-5 py-2.5 text-sm font-medium text-muted hover:text-white border-b-2 border-transparent transition-colors -mb-px"
+                  onclick="showTab('curl', this)" data-tab="curl">curl</button>
+          <button class="install-tab px-5 py-2.5 text-sm font-medium text-muted hover:text-white border-b-2 border-transparent transition-colors -mb-px"
+                  onclick="showTab('deno', this)" data-tab="deno">Deno</button>
+          <button class="install-tab px-5 py-2.5 text-sm font-medium text-muted hover:text-white border-b-2 border-transparent transition-colors -mb-px"
+                  onclick="showTab('source', this)" data-tab="source">Source</button>
+        </div>
+
+        <!-- Panels -->
+        <div id="tab-brew" class="install-panel active bg-bg-card border border-t-0 border-border rounded-b-lg p-5 font-mono text-sm">
+          <div class="flex items-center justify-between">
+            <span class="text-accent">brew install tawachan/tap/xp</span>
+            <button onclick="copyCode(this, 'brew install tawachan/tap/xp')" class="text-muted hover:text-white transition-colors p-1 flex-shrink-0" title="Copy">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+            </button>
+          </div>
+          <p class="mt-3 text-xs text-muted font-sans">macOS and Linux. Update with <code class="text-accent">brew upgrade xp</code>.</p>
+        </div>
+
+        <div id="tab-curl" class="install-panel hidden bg-bg-card border border-t-0 border-border rounded-b-lg p-5 font-mono text-sm leading-relaxed code-block overflow-x-auto">
+          <div class="text-gray-600 mb-1"># macOS (Apple Silicon)</div>
+          <div class="text-accent mb-3">curl -fsSL -L https://github.com/tawachan/xp/releases/latest/download/xp-darwin-arm64 -o /usr/local/bin/xp &amp;&amp; chmod +x /usr/local/bin/xp</div>
+          <div class="text-gray-600 mb-1"># macOS (Intel)</div>
+          <div class="text-accent mb-3">curl -fsSL -L https://github.com/tawachan/xp/releases/latest/download/xp-darwin-x64 -o /usr/local/bin/xp &amp;&amp; chmod +x /usr/local/bin/xp</div>
+          <div class="text-gray-600 mb-1"># Linux (x64)</div>
+          <div class="text-accent mb-3">curl -fsSL -L https://github.com/tawachan/xp/releases/latest/download/xp-linux-x64 -o /usr/local/bin/xp &amp;&amp; chmod +x /usr/local/bin/xp</div>
+          <div class="text-gray-600 mb-1"># Linux (arm64)</div>
+          <div class="text-accent">curl -fsSL -L https://github.com/tawachan/xp/releases/latest/download/xp-linux-arm64 -o /usr/local/bin/xp &amp;&amp; chmod +x /usr/local/bin/xp</div>
+          <p class="mt-3 text-xs text-muted font-sans">Update with <code class="text-accent">xp upgrade</code>.</p>
+        </div>
+
+        <div id="tab-deno" class="install-panel hidden bg-bg-card border border-t-0 border-border rounded-b-lg p-5 font-mono text-sm code-block overflow-x-auto">
+          <div class="text-accent break-all">deno install -g --allow-net --allow-read --allow-write --allow-env --allow-run -n xp https://raw.githubusercontent.com/tawachan/xp/main/main.ts</div>
+          <p class="mt-3 text-xs text-muted font-sans">Requires <a href="https://deno.com" class="text-accent hover:underline" target="_blank" rel="noopener">Deno 2.x</a>.</p>
+        </div>
+
+        <div id="tab-source" class="install-panel hidden bg-bg-card border border-t-0 border-border rounded-b-lg p-5 font-mono text-sm code-block overflow-x-auto">
+          <div class="text-accent">git clone https://github.com/tawachan/xp.git &amp;&amp; cd xp &amp;&amp; deno task compile &amp;&amp; sudo mv xp /usr/local/bin/</div>
+          <p class="mt-3 text-xs text-muted font-sans">Requires <a href="https://deno.com" class="text-accent hover:underline" target="_blank" rel="noopener">Deno 2.x</a>.</p>
+        </div>
+
       </div>
-      <div class="usage-item">
-        <div class="cmd">xp reply 1234567890 "Nice!"</div>
-        <div class="desc">Reply to a specific tweet.</div>
+    </section>
+
+    <!-- Setup -->
+    <section class="py-20" id="setup">
+      <div class="mx-auto max-w-3xl px-6">
+        <h2 class="text-2xl sm:text-3xl font-bold text-white text-center mb-12">Setup</h2>
+
+        <div class="bg-bg-card border border-border rounded-lg overflow-hidden">
+          <div class="flex items-center gap-1.5 px-4 py-2.5 border-b border-border">
+            <span class="w-3 h-3 rounded-full bg-[#ff5f57]"></span>
+            <span class="w-3 h-3 rounded-full bg-[#febc2e]"></span>
+            <span class="w-3 h-3 rounded-full bg-[#28c840]"></span>
+          </div>
+          <div class="p-5 font-mono text-sm leading-relaxed">
+            <div><span class="text-muted">$</span> <span class="text-white">xp auth login</span></div>
+            <div class="text-gray-600 mt-1"># 1. Enter your API Key &amp; Secret from the Developer Portal</div>
+            <div class="text-gray-600"># 2. Authorize in browser</div>
+            <div class="text-gray-600"># 3. Enter the PIN</div>
+            <div class="text-gray-600"># Done!</div>
+          </div>
+        </div>
+
+        <p class="mt-4 text-sm text-muted text-center">
+          Get your API keys from the <a href="https://developer.x.com/en/portal/dashboard" class="text-accent hover:underline" target="_blank" rel="noopener">X Developer Portal</a>.
+          <a href="https://docs.x.com/x-api/getting-started/pricing" class="text-accent hover:underline" target="_blank" rel="noopener">Pay-Per-Use</a> pricing recommended.
+        </p>
       </div>
-      <div class="usage-item">
-        <div class="cmd">xp get 1234567890</div>
-        <div class="desc">Fetch a tweet by ID. Requires paid API plan.</div>
+    </section>
+
+    <!-- Usage -->
+    <section class="py-20" id="usage">
+      <div class="mx-auto max-w-3xl px-6">
+        <h2 class="text-2xl sm:text-3xl font-bold text-white text-center mb-12">Usage</h2>
+
+        <div class="space-y-3">
+          <div class="bg-bg-card border border-border rounded-lg p-5 hover:border-border-hover transition-colors">
+            <code class="font-mono text-sm text-accent">xp "Hello from xp!"</code>
+            <p class="text-sm text-muted mt-1.5">Post a tweet. Or use <code class="text-accent text-xs bg-bg px-1.5 py-0.5 rounded">xp tweet "text"</code>.</p>
+          </div>
+
+          <div class="bg-bg-card border border-border rounded-lg p-5 hover:border-border-hover transition-colors">
+            <code class="font-mono text-sm text-accent">xp thread "First" "Second" "Third"</code>
+            <p class="text-sm text-muted mt-1.5">Post a thread. Each tweet auto-replies to the previous one.</p>
+          </div>
+
+          <div class="bg-bg-card border border-border rounded-lg p-5 hover:border-border-hover transition-colors">
+            <code class="font-mono text-sm text-accent">xp reply 1234567890 "Nice!"</code>
+            <p class="text-sm text-muted mt-1.5">Reply to a specific tweet.</p>
+          </div>
+
+          <div class="bg-bg-card border border-border rounded-lg p-5 hover:border-border-hover transition-colors">
+            <code class="font-mono text-sm text-accent">xp get 1234567890</code>
+            <p class="text-sm text-muted mt-1.5">Fetch a tweet by ID. Requires paid API plan.</p>
+          </div>
+
+          <div class="bg-bg-card border border-border rounded-lg p-5 hover:border-border-hover transition-colors">
+            <code class="font-mono text-sm text-accent">xp me --json | jq '.[0].text'</code>
+            <p class="text-sm text-muted mt-1.5">List your recent tweets. <code class="text-accent text-xs bg-bg px-1.5 py-0.5 rounded">--json</code> works on any command.</p>
+          </div>
+
+          <div class="bg-bg-card border border-border rounded-lg p-5 hover:border-border-hover transition-colors">
+            <code class="font-mono text-sm text-accent">xp delete 1234567890</code>
+            <p class="text-sm text-muted mt-1.5">Delete a tweet by ID.</p>
+          </div>
+        </div>
       </div>
-      <div class="usage-item">
-        <div class="cmd">xp me --json | jq '.[0].text'</div>
-        <div class="desc">List your recent tweets. <code style="color:#7ee787">--json</code> works on any command.</div>
-      </div>
-      <div class="usage-item">
-        <div class="cmd">xp delete 1234567890</div>
-        <div class="desc">Delete a tweet by ID.</div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-border py-12 mt-8">
+    <div class="mx-auto max-w-5xl px-6">
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-6">
+        <div class="flex items-center gap-6 flex-wrap justify-center">
+          <a href="https://github.com/tawachan/xp" class="text-sm text-muted hover:text-white transition-colors" target="_blank" rel="noopener">GitHub</a>
+          <a href="https://github.com/tawachan/xp/releases/latest" class="text-sm text-muted hover:text-white transition-colors" target="_blank" rel="noopener">Releases</a>
+          <a href="https://github.com/tawachan/xp#getting-started" class="text-sm text-muted hover:text-white transition-colors" target="_blank" rel="noopener">Getting Started</a>
+          <a href="https://github.com/tawachan/xp/blob/main/CLAUDE.md" class="text-sm text-muted hover:text-white transition-colors" target="_blank" rel="noopener">AI Agent Guide</a>
+        </div>
+        <p class="text-xs text-gray-600">MIT License &middot; Built with <a href="https://deno.com" class="text-muted hover:text-white transition-colors" target="_blank" rel="noopener">Deno</a></p>
       </div>
     </div>
-
-    <h2>Features</h2>
-    <div class="features">
-      <div class="feature">
-        <h3>Simple</h3>
-        <p>Just <code>xp "text"</code>. No API paths, no JSON payloads.</p>
-      </div>
-      <div class="feature">
-        <h3>Threads</h3>
-        <p><code>xp thread "1" "2" "3"</code> — auto reply chain.</p>
-      </div>
-      <div class="feature">
-        <h3>Read &amp; Reply</h3>
-        <p><code>xp get</code>, <code>xp me</code>, <code>xp reply</code> for full workflow.</p>
-      </div>
-      <div class="feature">
-        <h3>JSON output</h3>
-        <p><code>--json</code> flag on any command. Pipe to <code>jq</code>.</p>
-      </div>
-      <div class="feature">
-        <h3>Agent-friendly</h3>
-        <p>Machine-readable output, non-interactive flags, exit codes.</p>
-      </div>
-      <div class="feature">
-        <h3>Zero deps</h3>
-        <p>Single binary. OAuth 1.0a via WebCrypto. <code>xp upgrade</code> to update.</p>
-      </div>
-    </div>
-
-    <div class="links">
-      <a href="https://github.com/tawachan/xp">GitHub</a>
-      <a href="https://github.com/tawachan/xp/releases/latest">Releases</a>
-      <a href="https://github.com/tawachan/xp#getting-started">Getting Started</a>
-      <a href="https://github.com/tawachan/xp/blob/main/CLAUDE.md">AI Agent Guide</a>
-    </div>
-
-    <footer>
-      <p>MIT License &middot; Built with <a href="https://deno.com">Deno</a> &middot; Not affiliated with X Corp.</p>
-    </footer>
-  </div>
+  </footer>
 
   <script>
-    function showTab(name) {
-      document.querySelectorAll('.install-tab').forEach(t => t.classList.remove('active'));
-      document.querySelectorAll('.install-panel').forEach(p => p.classList.remove('active'));
-      event.target.classList.add('active');
-      document.getElementById('tab-' + name).classList.add('active');
+    function showTab(name, btn) {
+      document.querySelectorAll('.install-tab').forEach(t => {
+        t.classList.remove('active', 'text-white', 'border-accent');
+        t.classList.add('text-muted', 'border-transparent');
+      });
+      document.querySelectorAll('.install-panel').forEach(p => {
+        p.classList.add('hidden');
+        p.classList.remove('active');
+      });
+      btn.classList.add('active', 'text-white', 'border-accent');
+      btn.classList.remove('text-muted', 'border-transparent');
+      const panel = document.getElementById('tab-' + name);
+      panel.classList.remove('hidden');
+      panel.classList.add('active');
+    }
+
+    // Initialize first tab
+    document.addEventListener('DOMContentLoaded', () => {
+      const firstTab = document.querySelector('.install-tab');
+      if (firstTab) {
+        firstTab.classList.add('text-white', 'border-accent');
+        firstTab.classList.remove('text-muted', 'border-transparent');
+      }
+    });
+
+    function copyCode(btn, text) {
+      navigator.clipboard.writeText(text).then(() => {
+        const svg = btn.querySelector('svg');
+        const original = svg.innerHTML;
+        svg.innerHTML = '<path d="M20 6L9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/>';
+        setTimeout(() => { svg.innerHTML = original; }, 1500);
+      });
+    }
+
+    function copyHeroCode() {
+      const text = 'xp "Hello, world!"';
+      const btn = document.getElementById('hero-copy-btn');
+      copyCode(btn, text);
     }
   </script>
 </body>

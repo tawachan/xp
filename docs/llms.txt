@@ -1,6 +1,6 @@
 # xp
 
-> CLI tool for posting to X (Twitter) from your terminal. Single binary, zero dependencies.
+> A personal CLI for everyday tweeting — post, thread, reply, and manage your tweets from the terminal. Single binary, zero dependencies.
 
 ## Docs
 

@@ -1,6 +1,6 @@
 # xp
 
-A fast, minimal CLI for posting to X (Twitter) from your terminal. Built with Deno/TypeScript, zero dependencies.
+A personal CLI for everyday tweeting from your terminal — post, thread, reply, and manage your tweets without leaving the command line. Built with Deno/TypeScript, zero dependencies.
 
 ```bash
 xp "Hello, world!"
@@ -17,6 +17,8 @@ The official [twurl](https://github.com/twitter/twurl) is a generic API client (
 | JSON output | Parse raw response yourself | `xp me --json \| jq` |
 | Runtime | Ruby | Single binary (zero deps) |
 | Maintained | Last release 2020 | Active |
+
+xp is **not** a comprehensive X API client — it focuses on the tweet operations you actually use every day.
 
 ## Installation
 

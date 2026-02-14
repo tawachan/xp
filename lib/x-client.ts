@@ -152,9 +152,8 @@ async function handleApiError(
   if (res.status === 403) {
     if (operation === "read") {
       throw new Error(
-        "This feature requires X API Basic plan ($200/month) or higher.\n" +
-          "The Free plan only supports posting tweets.\n" +
-          "Upgrade at: https://developer.x.com/en/portal/products",
+        "This feature requires a paid X API plan (Pay-Per-Use or Basic).\n" +
+          "Sign up at: https://developer.x.com/en/portal/products",
       );
     }
     throw new Error(

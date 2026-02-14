@@ -97,6 +97,15 @@ async function main(): Promise<void> {
 
   const command = args[0]!;
 
+  // --image is only supported for tweet, thread, reply, and default (shorthand tweet)
+  const NON_IMAGE_COMMANDS = new Set([
+    "help", "--help", "-h", "version", "--version", "-v",
+    "get", "me", "delete", "cache", "auth", "config", "upgrade", "completions",
+  ]);
+  if (imagePaths.length > 0 && NON_IMAGE_COMMANDS.has(command)) {
+    throw new Error(`--image is not supported for the "${command}" command`);
+  }
+
   switch (command) {
     case "help":
     case "--help":

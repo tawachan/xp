@@ -81,6 +81,9 @@ _xp() {
         tweet|thread|reply)
             COMPREPLY=( $(compgen -W "--json --image" -- "\${cur}") )
             ;;
+        --image)
+            COMPREPLY=( $(compgen -f -- "\${cur}") )
+            ;;
         get|delete)
             COMPREPLY=( $(compgen -W "--json" -- "\${cur}") )
             ;;

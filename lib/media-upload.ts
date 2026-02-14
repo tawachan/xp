@@ -1,5 +1,7 @@
 import { buildAuthHeader } from "./oauth.ts";
 import { loadConfig } from "./config-store.ts";
+import { parseErrorDetail } from "./x-client.ts";
+import type { OAuthCredentials } from "./oauth.ts";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const MAX_IMAGES = 4;
@@ -11,38 +13,33 @@ const ALLOWED_TYPES: Record<string, string> = {
   ".webp": "image/webp",
 };
 
-export function validateImagePaths(paths: string[]): void {
-  if (paths.length > MAX_IMAGES) {
-    throw new Error(`Too many images (${paths.length}/${MAX_IMAGES} max)`);
+function getMimeType(filePath: string): string {
+  const ext = filePath.toLowerCase().match(/\.\w+$/)?.[0] ?? "";
+  const mimeType = ALLOWED_TYPES[ext];
+  if (!mimeType) {
+    throw new Error(`Unsupported image format: ${ext || "unknown"} (supported: JPG, PNG, GIF, WebP)`);
   }
+  return mimeType;
 }
 
-export async function uploadMedia(filePath: string): Promise<string> {
-  // Check file exists
+async function validateFile(filePath: string): Promise<void> {
   let stat: Deno.FileInfo;
   try {
     stat = await Deno.stat(filePath);
   } catch {
     throw new Error(`File not found: ${filePath}`);
   }
-
-  // Check file size
   if (stat.size > MAX_FILE_SIZE) {
     const sizeMB = (stat.size / (1024 * 1024)).toFixed(1);
     throw new Error(`File too large: ${filePath} (${sizeMB}MB, max 5MB)`);
   }
+  getMimeType(filePath);
+}
 
-  // Check MIME type
-  const ext = filePath.toLowerCase().match(/\.\w+$/)?.[0] ?? "";
-  const mimeType = ALLOWED_TYPES[ext];
-  if (!mimeType) {
-    throw new Error(`Unsupported image format: ${ext || "unknown"} (supported: JPG, PNG, GIF, WebP)`);
-  }
-
-  const config = await loadConfig();
+async function uploadMedia(filePath: string, config: OAuthCredentials): Promise<string> {
+  const mimeType = getMimeType(filePath);
   const url = "https://api.x.com/2/media/upload";
 
-  // Build multipart form data
   const fileData = await Deno.readFile(filePath);
   const form = new FormData();
   form.append("media", new Blob([fileData], { type: mimeType }), filePath.split("/").pop());
@@ -60,7 +57,7 @@ export async function uploadMedia(filePath: string): Promise<string> {
   });
 
   if (!res.ok) {
-    const detail = await parseUploadError(res);
+    const detail = await parseErrorDetail(res);
     throw new Error(`Media upload failed (${res.status}): ${detail}`);
   }
 
@@ -68,23 +65,20 @@ export async function uploadMedia(filePath: string): Promise<string> {
   return json.data.id;
 }
 
-async function parseUploadError(res: Response): Promise<string> {
-  try {
-    const body = await res.text();
-    const json = JSON.parse(body);
-    if (json.detail) return json.detail;
-    if (json.errors?.[0]?.message) return json.errors[0].message;
-    return body;
-  } catch {
-    return "Unknown error";
-  }
-}
-
 export async function uploadAllMedia(paths: string[]): Promise<string[]> {
-  validateImagePaths(paths);
+  if (paths.length > MAX_IMAGES) {
+    throw new Error(`Too many images (${paths.length}/${MAX_IMAGES} max)`);
+  }
+
+  // Validate all files upfront before uploading any
+  for (const path of paths) {
+    await validateFile(path);
+  }
+
+  const config = await loadConfig();
   const mediaIds: string[] = [];
   for (const path of paths) {
-    const id = await uploadMedia(path);
+    const id = await uploadMedia(path, config);
     mediaIds.push(id);
   }
   return mediaIds;

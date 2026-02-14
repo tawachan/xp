@@ -312,6 +312,10 @@ graph TD
     A --> F[commands/auth.ts]
     A --> U[commands/upgrade.ts]
 
+    B --> MU[lib/media-upload.ts<br/>Image Upload]
+    C --> MU
+    R --> MU
+
     B --> G[lib/x-client.ts<br/>X API v2 Client]
     C --> G
     R --> G
@@ -319,6 +323,9 @@ graph TD
     M --> G
     D --> G
     F --> H[lib/oauth.ts<br/>OAuth 1.0a Signatures]
+
+    MU --> H
+    MU --> G
 
     G --> H
     G --> I[lib/config-store.ts<br/>Config File Manager]

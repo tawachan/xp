@@ -138,7 +138,7 @@ export async function deleteTweet(tweetId: string): Promise<void> {
   await handleApiError(res, "write");
 }
 
-async function parseErrorDetail(res: Response): Promise<string> {
+export async function parseErrorDetail(res: Response): Promise<string> {
   try {
     const body = await res.text();
     const json = JSON.parse(body);

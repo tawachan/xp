@@ -1,0 +1,47 @@
+# xp
+
+> CLI tool for posting to X (Twitter) from your terminal. Single binary, zero dependencies.
+
+## Docs
+
+- [README](https://github.com/tawachan/xp#readme): Full documentation, installation, and usage guide
+- [Getting Started](https://github.com/tawachan/xp#getting-started): Setup guide with X Developer Portal
+- [Usage](https://github.com/tawachan/xp#usage): All available commands
+- [Output Format](https://github.com/tawachan/xp#output-format): Machine-readable output specification
+- [How It Works](https://github.com/tawachan/xp#how-it-works): Architecture and flow diagrams
+- [Releases](https://github.com/tawachan/xp/releases): Download binaries
+
+## Quick Reference
+
+Post a tweet: `xp "Hello, world!"`
+Post a thread: `xp thread "First" "Second" "Third"`
+Delete a tweet: `xp delete <tweet_id>`
+Authenticate: `xp auth login`
+Log out: `xp auth logout`
+Show config: `xp config show`
+Set config (non-interactive): `xp config set --api-key=KEY --api-secret=SECRET --access-token=TOKEN --access-token-secret=TOKEN_SECRET`
+
+## Output Format
+
+Success (exit code 0):
+```
+tweet_id: 1234567890123456789
+url: https://x.com/i/status/1234567890123456789
+```
+
+Error (exit code 1, stderr):
+```
+error: <message>
+```
+
+## Install
+
+```
+curl -fsSL -L https://github.com/tawachan/xp/releases/latest/download/xp-darwin-arm64 -o /usr/local/bin/xp && chmod +x /usr/local/bin/xp
+```
+
+## Optional
+
+- [Technical Details](https://github.com/tawachan/xp#technical-details): Runtime, auth, and distribution info
+- [Development](https://github.com/tawachan/xp#development): Contributing guide
+- [CLAUDE.md](https://github.com/tawachan/xp/blob/main/CLAUDE.md): AI agent integration guide

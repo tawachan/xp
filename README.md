@@ -1,170 +1,212 @@
-# xp - X (Twitter) CLI Tool
+# xp
 
-ターミナルからツイートを投稿できるCLIツール。Deno/TypeScript製、依存ゼロ。
+A fast, minimal CLI for posting to X (Twitter) from your terminal. Built with Deno/TypeScript, zero dependencies.
 
 ```bash
-xp "Hello from xp!"
+xp "Hello, world!"
 ```
 
-## twurl との違い
+## Why xp?
+
+The official [twurl](https://github.com/twitter/twurl) is a generic API client (curl + OAuth) that requires knowledge of API paths and JSON payloads. Its last release was August 2020.
 
 | | twurl | xp |
 |---|---|---|
-| ツイート投稿 | `twurl -X POST -H api.twitter.com "/2/tweets" -d '{"text":"Hello"}'` | `xp "Hello"` |
-| スレッド | 手動でreply chain構築 | `xp thread "1" "2" "3"` |
-| ランタイム | Ruby | 単一バイナリ (依存ゼロ) |
-| メンテナンス | 2020年8月以降停滞 | アクティブ |
+| Post a tweet | `twurl -X POST -H api.twitter.com "/2/tweets" -d '{"text":"Hello"}'` | `xp "Hello"` |
+| Thread | Manually chain reply IDs | `xp thread "1" "2" "3"` |
+| Runtime | Ruby | Single binary (zero deps) |
+| Maintained | Last release 2020 | Active |
 
-## インストール
+## Installation
 
-### Deno がインストール済みの場合
+### With Deno (recommended)
 
 ```bash
-deno install --allow-net --allow-read --allow-write --allow-env --name xp https://raw.githubusercontent.com/tawachan/xp/main/main.ts
+deno install -g --allow-net --allow-read --allow-write --allow-env --allow-run -n xp https://raw.githubusercontent.com/tawachan/xp/main/main.ts
 ```
 
-### ソースからビルド
+### Build from source
 
 ```bash
 git clone https://github.com/tawachan/xp.git
 cd xp
 deno task compile
-# ./xp バイナリが生成される
+# Produces ./xp binary — move it to your PATH
+sudo mv xp /usr/local/bin/
 ```
 
-## セットアップ
+## Getting Started
 
-### 1. X Developer Portal でAPI Keyを取得
+### 1. Create an app on the X Developer Portal
 
-1. [Developer Portal](https://developer.x.com/en/portal/dashboard) でアプリを作成
-2. App permissions を **Read and Write** に設定
-3. **API Key** と **API Secret** を取得
+1. Go to [Developer Portal](https://developer.x.com/en/portal/dashboard)
+2. Create a new app (Free tier is fine — 1,500 tweets/month)
+3. Set App permissions to **Read and Write**
+4. Copy your **API Key** and **API Secret**
 
-### 2. 認証
+### 2. Authenticate
 
 ```bash
 xp auth login
-# → API Key / API Secret を聞かれる (初回のみ)
-# → ブラウザが自動で開く → Xで「許可」→ PINを入力 → 完了！
 ```
 
-これだけでOKです。Access Token は自動で取得・保存されます。
+That's it. The CLI will:
+1. Ask for your API Key and API Secret (first time only)
+2. Open your browser to authorize the app on X
+3. Ask you to enter the PIN shown on screen
+4. Automatically save your Access Token
 
-> **非対話モード** (CI/エージェント向け): `xp config set --api-key=xxx --api-secret=xxx --access-token=xxx --access-token-secret=xxx`
+> **Non-interactive mode** (for CI / AI agents like Claude Code):
+> ```bash
+> xp config set --api-key=KEY --api-secret=SECRET --access-token=TOKEN --access-token-secret=TOKEN_SECRET
+> ```
 
-設定は `~/.config/xp/config.json` に保存されます (パーミッション 600)。
+Credentials are stored in `~/.config/xp/config.json` (chmod 600).
 
-## 使い方
+## Usage
+
+### Post a tweet
 
 ```bash
-# ツイート投稿
 xp "Hello from xp!"
-xp tweet "Hello from xp!"
-
-# スレッド投稿
-xp thread "最初のツイート" "2番目のツイート" "3番目のツイート"
-
-# ツイート削除
-xp delete 1234567890123456789
-
-# 設定確認
-xp config show
-
-# ヘルプ
-xp help
+xp tweet "Hello from xp!"    # explicit subcommand
 ```
 
-## 出力形式
+### Post a thread
 
-機械可読なフォーマットで出力します:
+```bash
+xp thread "First tweet" "Second tweet" "Third tweet"
+```
+
+Each tweet is automatically posted as a reply to the previous one.
+
+### Delete a tweet
+
+```bash
+xp delete 1234567890123456789
+```
+
+### Manage credentials
+
+```bash
+xp config show     # Show current config (masked)
+xp auth logout     # Remove saved credentials
+```
+
+### Help
+
+```bash
+xp help
+xp version
+```
+
+## Output Format
+
+xp outputs machine-readable text, making it easy to use from scripts and AI agents:
 
 ```
 tweet_id: 1234567890123456789
 url: https://x.com/i/status/1234567890123456789
 ```
 
-## 仕組み
+Thread output:
 
-### 認証フロー (OAuth 1.0a PIN-based)
+```
+[1/3]
+tweet_id: 1234567890123456789
+url: https://x.com/i/status/1234567890123456789
+
+[2/3]
+tweet_id: 1234567890123456790
+url: https://x.com/i/status/1234567890123456790
+
+[3/3]
+tweet_id: 1234567890123456791
+url: https://x.com/i/status/1234567890123456791
+```
+
+## How It Works
+
+### Authentication Flow (OAuth 1.0a PIN-based)
 
 ```mermaid
 sequenceDiagram
-    participant U as ユーザー
-    participant X as xp CLI
+    participant U as User
+    participant C as xp CLI
     participant A as X API
-    participant B as ブラウザ
+    participant B as Browser
 
-    U->>X: xp config set --api-key=... --api-secret=...
-    X->>X: ~/.config/xp/config.json に保存
-
-    U->>X: xp auth login
-    X->>A: POST /oauth/request_token
-    A-->>X: oauth_token (一時トークン)
-    X->>B: ブラウザを自動オープン (/oauth/authorize)
-    B->>U: 「アプリを許可しますか？」
-    U->>B: 許可
-    B-->>U: PIN表示
-    U->>X: PINを入力
-    X->>A: POST /oauth/access_token (PIN送信)
-    A-->>X: access_token + access_token_secret
-    X->>X: config.json に保存 → 認証完了！
+    U->>C: xp auth login
+    C->>U: Prompt for API Key & Secret
+    U->>C: Enter credentials
+    C->>A: POST /oauth/request_token
+    A-->>C: oauth_token (temporary)
+    C->>B: Open browser automatically
+    B->>U: "Authorize this app?"
+    U->>B: Approve
+    B-->>U: Display PIN
+    U->>C: Enter PIN
+    C->>A: POST /oauth/access_token (with PIN)
+    A-->>C: access_token + access_token_secret
+    C->>C: Save to ~/.config/xp/config.json
+    C-->>U: Done!
 ```
 
-### ツイート投稿フロー
+### Tweet Posting Flow
 
 ```mermaid
 sequenceDiagram
-    participant U as ユーザー
-    participant X as xp CLI
+    participant U as User
+    participant C as xp CLI
     participant A as X API v2
 
-    U->>X: xp "Hello!"
-    X->>X: config.json から認証情報読み込み
-    X->>X: OAuth 1.0a 署名生成 (HMAC-SHA1)
-    X->>A: POST /2/tweets {"text":"Hello!"}
-    A-->>X: {"data":{"id":"123..."}}
-    X-->>U: tweet_id: 123...<br/>url: https://x.com/i/status/123...
+    U->>C: xp "Hello!"
+    C->>C: Load credentials from config
+    C->>C: Generate OAuth 1.0a signature (HMAC-SHA1)
+    C->>A: POST /2/tweets {"text":"Hello!"}
+    A-->>C: {"data":{"id":"123..."}}
+    C-->>U: tweet_id: 123...<br/>url: https://x.com/i/status/123...
 ```
 
-### スレッド投稿フロー
+### Thread Posting Flow
 
 ```mermaid
 sequenceDiagram
-    participant U as ユーザー
-    participant X as xp CLI
+    participant U as User
+    participant C as xp CLI
     participant A as X API v2
 
-    U->>X: xp thread "1つ目" "2つ目" "3つ目"
-    X->>A: POST /2/tweets {"text":"1つ目"}
-    A-->>X: id: aaa
-    X->>A: POST /2/tweets {"text":"2つ目", reply: {in_reply_to_tweet_id: aaa}}
-    A-->>X: id: bbb
-    X->>A: POST /2/tweets {"text":"3つ目", reply: {in_reply_to_tweet_id: bbb}}
-    A-->>X: id: ccc
-    X-->>U: [1/3] tweet_id: aaa<br/>[2/3] tweet_id: bbb<br/>[3/3] tweet_id: ccc
+    U->>C: xp thread "First" "Second" "Third"
+    C->>A: POST /2/tweets {"text":"First"}
+    A-->>C: id: aaa
+    C->>A: POST /2/tweets {"text":"Second", reply: {in_reply_to_tweet_id: aaa}}
+    A-->>C: id: bbb
+    C->>A: POST /2/tweets {"text":"Third", reply: {in_reply_to_tweet_id: bbb}}
+    A-->>C: id: ccc
+    C-->>U: [1/3] tweet_id: aaa<br/>[2/3] tweet_id: bbb<br/>[3/3] tweet_id: ccc
 ```
 
-### アーキテクチャ
+### Architecture
 
 ```mermaid
 graph TD
-    A[main.ts<br/>コマンドルーティング] --> B[commands/tweet.ts]
+    A[main.ts<br/>Command Router] --> B[commands/tweet.ts]
     A --> C[commands/thread.ts]
     A --> D[commands/delete.ts]
     A --> E[commands/config.ts]
     A --> F[commands/auth.ts]
 
-    B --> G[lib/x-client.ts<br/>X API v2 クライアント]
+    B --> G[lib/x-client.ts<br/>X API v2 Client]
     C --> G
     D --> G
-    F --> H[lib/oauth.ts<br/>OAuth 1.0a 署名]
+    F --> H[lib/oauth.ts<br/>OAuth 1.0a Signatures]
 
     G --> H
-    G --> I[lib/config-store.ts<br/>設定ファイル管理]
+    G --> I[lib/config-store.ts<br/>Config File Manager]
     F --> I
     E --> I
 
-    B --> J[lib/output.ts<br/>出力フォーマット]
+    B --> J[lib/output.ts<br/>Output Formatter]
     C --> J
     D --> J
 
@@ -172,13 +214,31 @@ graph TD
     H --> L[WebCrypto API<br/>HMAC-SHA1]
 ```
 
-## 技術仕様
+## Technical Details
 
 - **Runtime**: Deno 2.x (TypeScript)
-- **認証**: OAuth 1.0a (WebCrypto API で自前実装、npm依存ゼロ)
-- **API**: X API v2
-- **配布**: `deno compile` による単一バイナリ
+- **Auth**: OAuth 1.0a — implemented from scratch using [WebCrypto API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API), zero npm dependencies
+- **API**: [X API v2](https://developer.x.com/en/docs/x-api)
+- **Distribution**: Single binary via `deno compile`
+- **Config**: `~/.config/xp/config.json` (permissions `0600`)
 
-## ライセンス
+## Development
 
-MIT
+```bash
+# Run in dev mode
+deno task dev <args>
+
+# Type check
+deno task check
+
+# Compile to binary
+deno task compile
+```
+
+## Contributing
+
+Contributions are welcome! Please open an issue or submit a pull request.
+
+## License
+
+[MIT](LICENSE)

@@ -8,6 +8,7 @@ complete -c xp -n '__fish_use_subcommand' -a reply -d 'Reply to a tweet'
 complete -c xp -n '__fish_use_subcommand' -a get -d 'Fetch a tweet by ID'
 complete -c xp -n '__fish_use_subcommand' -a me -d 'List your recent tweets'
 complete -c xp -n '__fish_use_subcommand' -a delete -d 'Delete a tweet'
+complete -c xp -n '__fish_use_subcommand' -a cache -d 'Manage tweet cache'
 complete -c xp -n '__fish_use_subcommand' -a auth -d 'Authentication'
 complete -c xp -n '__fish_use_subcommand' -a config -d 'Manage config'
 complete -c xp -n '__fish_use_subcommand' -a upgrade -d 'Upgrade to latest version'
@@ -18,6 +19,11 @@ complete -c xp -n '__fish_use_subcommand' -a version -d 'Show version'
 # auth subcommands
 complete -c xp -n '__fish_seen_subcommand_from auth' -a login -d 'Authenticate via browser'
 complete -c xp -n '__fish_seen_subcommand_from auth' -a logout -d 'Remove saved credentials'
+
+# cache subcommands
+complete -c xp -n '__fish_seen_subcommand_from cache' -a list -d 'List cached tweets'
+complete -c xp -n '__fish_seen_subcommand_from cache' -a show -d 'Show a cached tweet'
+complete -c xp -n '__fish_seen_subcommand_from cache' -a clear -d 'Clear all cached tweets'
 
 # config subcommands
 complete -c xp -n '__fish_seen_subcommand_from config' -a set -d 'Set API credentials'
@@ -39,7 +45,7 @@ _xp() {
     COMPREPLY=()
     cur="\${COMP_WORDS[COMP_CWORD]}"
     prev="\${COMP_WORDS[COMP_CWORD-1]}"
-    commands="tweet thread reply get me delete auth config upgrade completions help version"
+    commands="tweet thread reply get me delete cache auth config upgrade completions help version"
 
     case "\${prev}" in
         xp)
@@ -47,6 +53,9 @@ _xp() {
             ;;
         auth)
             COMPREPLY=( $(compgen -W "login logout" -- "\${cur}") )
+            ;;
+        cache)
+            COMPREPLY=( $(compgen -W "list show clear" -- "\${cur}") )
             ;;
         config)
             COMPREPLY=( $(compgen -W "set show" -- "\${cur}") )
@@ -74,6 +83,7 @@ _xp() {
         'get:Fetch a tweet by ID'
         'me:List your recent tweets'
         'delete:Delete a tweet'
+        'cache:Manage tweet cache'
         'auth:Authentication'
         'config:Manage config'
         'upgrade:Upgrade to latest version'
@@ -94,6 +104,9 @@ _xp() {
             case "\${words[1]}" in
                 auth)
                     _values 'subcommand' 'login[Authenticate via browser]' 'logout[Remove saved credentials]'
+                    ;;
+                cache)
+                    _values 'subcommand' 'list[List cached tweets]' 'show[Show a cached tweet]' 'clear[Clear all cached tweets]'
                     ;;
                 config)
                     _values 'subcommand' 'set[Set API credentials]' 'show[Show current config]'

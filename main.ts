@@ -8,6 +8,7 @@ import { configSetCommand, configShowCommand } from "./commands/config.ts";
 import { authLoginCommand, authLogoutCommand } from "./commands/auth.ts";
 import { completionsCommand } from "./commands/completions.ts";
 import { upgradeCommand } from "./commands/upgrade.ts";
+import { cacheListCommand, cacheShowCommand, cacheClearCommand } from "./commands/cache.ts";
 import { formatError } from "./lib/output.ts";
 import denoConfig from "./deno.json" with { type: "json" };
 
@@ -23,6 +24,9 @@ Usage:
   xp get <tweet_id>                  Fetch a tweet by ID
   xp me [limit]                      List your recent tweets (default: 10)
   xp delete <tweet_id>               Delete a tweet
+  xp cache list                      List cached tweets
+  xp cache show <tweet_id>           Show a cached tweet
+  xp cache clear                     Clear all cached tweets
   xp auth login                      Authenticate via browser (OAuth PIN flow)
   xp auth logout                     Remove saved credentials
   xp config set [flags]              Set API credentials
@@ -120,6 +124,19 @@ async function main(): Promise<void> {
         throw new Error("Tweet ID is required: xp delete <tweet_id>");
       }
       await deleteCommand(args[1], jsonFlag);
+      break;
+
+    case "cache":
+      if (args[1] === "show") {
+        if (!args[2]) {
+          throw new Error("Tweet ID is required: xp cache show <tweet_id>");
+        }
+        await cacheShowCommand(args[2], jsonFlag);
+      } else if (args[1] === "clear") {
+        await cacheClearCommand();
+      } else {
+        await cacheListCommand(jsonFlag);
+      }
       break;
 
     case "auth":

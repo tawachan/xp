@@ -1,8 +1,59 @@
 import { getCachedTweet, listCachedTweets, clearCache } from "../lib/cache-store.ts";
 import { formatTweetData, formatTweetList } from "../lib/output.ts";
 
-export async function cacheListCommand(json = false): Promise<void> {
-  const tweets = await listCachedTweets();
+export interface CacheListOptions {
+  limit?: string;
+  year?: string;
+  month?: string;
+  json?: boolean;
+}
+
+export async function cacheListCommand(options: CacheListOptions = {}): Promise<void> {
+  const { limit, year, month, json = false } = options;
+
+  if (month && !year) {
+    throw new Error("--month requires --year");
+  }
+
+  if (limit !== undefined) {
+    const n = Number(limit);
+    if (!Number.isInteger(n) || n <= 0) {
+      throw new Error(`Invalid limit: "${limit}" (must be a positive integer)`);
+    }
+  }
+
+  if (year !== undefined) {
+    const y = Number(year);
+    if (!Number.isInteger(y) || year.length !== 4) {
+      throw new Error(`Invalid year: "${year}" (must be a 4-digit year)`);
+    }
+  }
+
+  if (month !== undefined) {
+    const m = Number(month);
+    if (!Number.isInteger(m) || m < 1 || m > 12) {
+      throw new Error(`Invalid month: "${month}" (must be 1-12)`);
+    }
+  }
+
+  let tweets = await listCachedTweets();
+
+  if (year) {
+    const y = Number(year);
+    tweets = tweets.filter((t) => {
+      if (!t.created_at) return false;
+      const d = new Date(t.created_at);
+      if (month) {
+        return d.getUTCFullYear() === y && d.getUTCMonth() + 1 === Number(month);
+      }
+      return d.getUTCFullYear() === y;
+    });
+  }
+
+  if (limit) {
+    tweets = tweets.slice(0, Number(limit));
+  }
+
   console.log(formatTweetList(tweets, json));
 }
 

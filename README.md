@@ -352,6 +352,8 @@ graph TD
     D --> CS
     CA --> CS
 
+    CS --> I
+
     B --> J[lib/output.ts<br/>Output Formatter<br/>text / JSON]
     C --> J
     R --> J
@@ -361,7 +363,7 @@ graph TD
     CA --> J
 
     I --> K[(~/.config/xp/config.json)]
-    CS --> KCS[(~/.config/xp/cache/tweets.json)]
+    CS --> KCS[(cache/tweets.json<br/>configurable via --cache-dir)]
     H --> L[WebCrypto API<br/>HMAC-SHA1]
     U --> GH[GitHub Releases API]
 ```
@@ -373,6 +375,7 @@ graph TD
 - **API**: [X API v2](https://developer.x.com/en/docs/x-api)
 - **Distribution**: Single binary via `deno compile`
 - **Config**: `~/.config/xp/config.json` (permissions `0600`)
+- **Cache**: `~/.config/xp/cache/tweets.json` (customizable via `--cache-dir`)
 
 ## Development
 

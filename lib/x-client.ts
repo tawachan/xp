@@ -1,5 +1,5 @@
 import { buildAuthHeader } from "./oauth.ts";
-import { loadConfig } from "./config-store.ts";
+import { services } from "./services.ts";
 
 const BASE_URL = "https://api.x.com/2";
 
@@ -17,7 +17,7 @@ export async function postTweet(
   if (replyToId) {
     validateTweetId(replyToId);
   }
-  const config = await loadConfig();
+  const config = await services.loadConfig();
   const url = `${BASE_URL}/tweets`;
 
   const body: Record<string, unknown> = { text };
@@ -30,7 +30,7 @@ export async function postTweet(
 
   const authHeader = await buildAuthHeader("POST", url, config);
 
-  const res = await fetch(url, {
+  const res = await services.fetch(url, {
     method: "POST",
     headers: {
       Authorization: authHeader,
@@ -53,14 +53,14 @@ export interface TweetData {
 
 export async function getTweet(tweetId: string): Promise<TweetData> {
   validateTweetId(tweetId);
-  const config = await loadConfig();
+  const config = await services.loadConfig();
   const url = `${BASE_URL}/tweets/${tweetId}`;
   const params = { "tweet.fields": "created_at,author_id" };
 
   const authHeader = await buildAuthHeader("GET", url, config, params);
 
   const queryString = new URLSearchParams(params).toString();
-  const res = await fetch(`${url}?${queryString}`, {
+  const res = await services.fetch(`${url}?${queryString}`, {
     method: "GET",
     headers: { Authorization: authHeader },
   });
@@ -84,12 +84,12 @@ export async function getMyTweets(options: GetMyTweetsOptions = {}): Promise<Twe
   if (beforeId) validateTweetId(beforeId);
   if (afterId) validateTweetId(afterId);
 
-  const config = await loadConfig();
+  const config = await services.loadConfig();
 
   // First get authenticated user ID
   const meUrl = `${BASE_URL}/users/me`;
   const meAuthHeader = await buildAuthHeader("GET", meUrl, config);
-  const meRes = await fetch(meUrl, {
+  const meRes = await services.fetch(meUrl, {
     method: "GET",
     headers: { Authorization: meAuthHeader },
   });
@@ -111,7 +111,7 @@ export async function getMyTweets(options: GetMyTweetsOptions = {}): Promise<Twe
 
   const tweetsAuthHeader = await buildAuthHeader("GET", tweetsUrl, config, params);
   const queryString = new URLSearchParams(params).toString();
-  const tweetsRes = await fetch(`${tweetsUrl}?${queryString}`, {
+  const tweetsRes = await services.fetch(`${tweetsUrl}?${queryString}`, {
     method: "GET",
     headers: { Authorization: tweetsAuthHeader },
   });
@@ -123,12 +123,12 @@ export async function getMyTweets(options: GetMyTweetsOptions = {}): Promise<Twe
 
 export async function deleteTweet(tweetId: string): Promise<void> {
   validateTweetId(tweetId);
-  const config = await loadConfig();
+  const config = await services.loadConfig();
   const url = `${BASE_URL}/tweets/${tweetId}`;
 
   const authHeader = await buildAuthHeader("DELETE", url, config);
 
-  const res = await fetch(url, {
+  const res = await services.fetch(url, {
     method: "DELETE",
     headers: {
       Authorization: authHeader,

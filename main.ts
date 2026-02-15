@@ -72,13 +72,13 @@ Examples:
   xp thread "First" "Second" --image cover.jpg
 `;
 
-async function main(): Promise<void> {
-  const jsonFlag = Deno.args.includes("--json");
+export async function main(rawInput: string[] = Deno.args): Promise<void> {
+  const jsonFlag = rawInput.includes("--json");
 
   // Extract --image flags and their values
   const imagePaths: string[] = [];
   const filteredArgs: string[] = [];
-  const rawArgs = Deno.args.filter((a) => a !== "--json");
+  const rawArgs = rawInput.filter((a) => a !== "--json");
   for (let i = 0; i < rawArgs.length; i++) {
     if (rawArgs[i] === "--image") {
       const path = rawArgs[++i];
@@ -229,10 +229,12 @@ async function main(): Promise<void> {
   }
 }
 
-try {
-  await main();
-} catch (e) {
-  const jsonFlag = Deno.args.includes("--json");
-  console.error(formatError(e instanceof Error ? e.message : String(e), jsonFlag));
-  Deno.exit(1);
+if (import.meta.main) {
+  try {
+    await main();
+  } catch (e) {
+    const jsonFlag = Deno.args.includes("--json");
+    console.error(formatError(e instanceof Error ? e.message : String(e), jsonFlag));
+    Deno.exit(1);
+  }
 }

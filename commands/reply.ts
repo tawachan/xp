@@ -1,5 +1,5 @@
 import { postTweet } from "../lib/x-client.ts";
-import { cacheTweet } from "../lib/cache-store.ts";
+import { services } from "../lib/services.ts";
 import { formatTweetResult } from "../lib/output.ts";
 import { uploadAllMedia } from "../lib/media-upload.ts";
 
@@ -12,6 +12,6 @@ export async function replyCommand(tweetId: string, text: string, json = false, 
   }
   const mediaIds = imagePaths?.length ? await uploadAllMedia(imagePaths) : undefined;
   const result = await postTweet(text, tweetId, mediaIds);
-  await cacheTweet({ id: result.id, text, created_at: new Date().toISOString() });
+  await services.cacheTweet({ id: result.id, text, created_at: new Date().toISOString() });
   console.log(formatTweetResult(result, json));
 }

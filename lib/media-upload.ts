@@ -1,5 +1,5 @@
 import { buildAuthHeader } from "./oauth.ts";
-import { loadConfig } from "./config-store.ts";
+import { services } from "./services.ts";
 import { parseErrorDetail } from "./x-client.ts";
 import type { OAuthCredentials } from "./oauth.ts";
 
@@ -25,7 +25,7 @@ function getMimeType(filePath: string): string {
 async function validateFile(filePath: string): Promise<void> {
   let stat: Deno.FileInfo;
   try {
-    stat = await Deno.stat(filePath);
+    stat = await services.stat(filePath);
   } catch {
     throw new Error(`File not found: ${filePath}`);
   }
@@ -40,7 +40,7 @@ async function uploadMedia(filePath: string, config: OAuthCredentials): Promise<
   const mimeType = getMimeType(filePath);
   const url = "https://api.x.com/2/media/upload";
 
-  const fileData = await Deno.readFile(filePath);
+  const fileData = await services.readFile(filePath);
   const form = new FormData();
   form.append("media", new Blob([fileData], { type: mimeType }), filePath.split("/").pop());
   form.append("media_category", "tweet_image");
@@ -48,7 +48,7 @@ async function uploadMedia(filePath: string, config: OAuthCredentials): Promise<
   // OAuth 1.0a — no params in signature for multipart requests
   const authHeader = await buildAuthHeader("POST", url, config);
 
-  const res = await fetch(url, {
+  const res = await services.fetch(url, {
     method: "POST",
     headers: {
       Authorization: authHeader,
@@ -75,7 +75,7 @@ export async function uploadAllMedia(paths: string[]): Promise<string[]> {
     await validateFile(path);
   }
 
-  const config = await loadConfig();
+  const config = await services.loadConfig();
   const mediaIds: string[] = [];
   for (const path of paths) {
     const id = await uploadMedia(path, config);

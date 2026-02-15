@@ -14,7 +14,11 @@ export async function configSetCommand(args: string[]): Promise<void> {
     } else if (arg.startsWith("--access-token-secret=")) {
       flags.accessTokenSecret = arg.slice("--access-token-secret=".length);
     } else if (arg.startsWith("--cache-dir=")) {
-      flags.cacheDir = arg.slice("--cache-dir=".length);
+      const dir = arg.slice("--cache-dir=".length);
+      if (!dir.startsWith("/") && !dir.startsWith("~")) {
+        throw new Error("--cache-dir must be an absolute path (starting with / or ~)");
+      }
+      flags.cacheDir = dir;
       hasCacheDir = true;
     }
   }

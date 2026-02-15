@@ -130,7 +130,7 @@ xp auth logout             # Remove saved credentials
 
 ```bash
 xp config set --api-key=KEY --api-secret=SECRET --access-token=TOKEN --access-token-secret=TOKEN_SECRET
-xp config set --cache-dir=/path/to/cache   # Set custom cache directory
+xp config set --cache-dir=~/my-cache       # Set custom cache directory (absolute path only)
 xp config unset --cache-dir                # Reset cache directory to default
 xp config show             # Show current config (masked)
 ```
@@ -156,6 +156,7 @@ Common errors:
 - `File too large` → image exceeds 5 MB limit
 - `Unsupported image format` → must be JPG, PNG, GIF, or WebP
 - `Too many images` → max 4 images per tweet
+- `--cache-dir must be an absolute path` → relative paths are not allowed
 
 ### JSON output
 
@@ -200,7 +201,7 @@ xp upgrade
 - Config is stored at `~/.config/xp/config.json`
 - `xp get` uses cache first, avoiding paid API calls for previously fetched tweets
 - Use `xp cache list --json` to get all cached tweets programmatically
-- Use `xp config set --cache-dir=./cache` to store cache in a project directory (e.g. for Git versioning)
+- Use `xp config set --cache-dir=~/project/cache` to store cache in a custom directory (e.g. for Git versioning)
 
 ## Development
 

@@ -1,8 +1,9 @@
 import { postTweet } from "../lib/x-client.ts";
 import { cacheTweet } from "../lib/cache-store.ts";
 import { formatThreadResult } from "../lib/output.ts";
+import { uploadAllMedia } from "../lib/media-upload.ts";
 
-export async function threadCommand(texts: string[], json = false): Promise<void> {
+export async function threadCommand(texts: string[], json = false, imagePaths?: string[]): Promise<void> {
   if (texts.length < 2) {
     throw new Error("Thread requires at least 2 texts");
   }
@@ -12,14 +13,17 @@ export async function threadCommand(texts: string[], json = false): Promise<void
     }
   }
 
+  // Upload images for the first tweet only
+  const mediaIds = imagePaths?.length ? await uploadAllMedia(imagePaths) : undefined;
+
   const results: Array<{ id: string }> = [];
   let previousId: string | undefined;
   const now = new Date().toISOString();
 
-  for (const text of texts) {
-    const result = await postTweet(text, previousId);
+  for (let i = 0; i < texts.length; i++) {
+    const result = await postTweet(texts[i]!, previousId, i === 0 ? mediaIds : undefined);
     results.push(result);
-    await cacheTweet({ id: result.id, text, created_at: now });
+    await cacheTweet({ id: result.id, text: texts[i]!, created_at: now });
     previousId = result.id;
   }
 

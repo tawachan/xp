@@ -134,6 +134,17 @@ Each tweet is automatically posted as a reply to the previous one.
 xp reply 1234567890123456789 "Great thread!"
 ```
 
+### Post with images
+
+```bash
+xp "Hello" --image photo.jpg                      # 1 image
+xp tweet "Hello" --image a.jpg --image b.jpg       # up to 4 images
+xp reply 1234567890123456789 "Nice!" --image r.png # reply with image
+xp thread "First" "Second" --image cover.jpg       # image on first tweet
+```
+
+Images must be JPG, PNG, GIF, or WebP and under 5 MB each.
+
 ### Fetch a tweet
 
 ```bash
@@ -301,6 +312,10 @@ graph TD
     A --> F[commands/auth.ts]
     A --> U[commands/upgrade.ts]
 
+    B --> MU[lib/media-upload.ts<br/>Image Upload]
+    C --> MU
+    R --> MU
+
     B --> G[lib/x-client.ts<br/>X API v2 Client]
     C --> G
     R --> G
@@ -308,6 +323,9 @@ graph TD
     M --> G
     D --> G
     F --> H[lib/oauth.ts<br/>OAuth 1.0a Signatures]
+
+    MU --> H
+    MU --> G
 
     G --> H
     G --> I[lib/config-store.ts<br/>Config File Manager]

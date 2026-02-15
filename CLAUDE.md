@@ -47,6 +47,20 @@ tweet_id: 1234567890123456790
 url: https://x.com/i/status/1234567890123456790
 ```
 
+### Post with images
+
+```bash
+xp "Hello" --image photo.jpg                          # 1 image
+xp tweet "Hello" --image a.jpg --image b.jpg           # multiple (max 4)
+xp reply 1234567890123456789 "Nice!" --image reaction.png  # reply with image
+xp thread "First" "Second" --image cover.jpg           # image on first tweet
+```
+
+Output is the same as a normal tweet. Constraints:
+- Max 4 images per tweet
+- Max 5 MB per image
+- Supported formats: JPG, PNG, GIF, WebP
+
 ### Fetch a tweet (requires paid plan)
 
 ```bash
@@ -136,6 +150,10 @@ Common errors:
 - `This feature requires a paid X API plan` → `get`/`me` need Pay-Per-Use or Basic
 - `Rate limit exceeded` → wait until reset time shown
 - `Text is too long` → tweet exceeds 280 characters
+- `File not found` → image file path does not exist
+- `File too large` → image exceeds 5 MB limit
+- `Unsupported image format` → must be JPG, PNG, GIF, or WebP
+- `Too many images` → max 4 images per tweet
 
 ### JSON output
 
@@ -195,6 +213,7 @@ deno task compile        # Compile to binary
 - `commands/` - Command implementations (tweet, thread, reply, get, me, delete, cache, config, auth, upgrade, completions)
 - `lib/oauth.ts` - OAuth 1.0a signatures (WebCrypto API, zero npm deps)
 - `lib/x-client.ts` - X API v2 HTTP client
+- `lib/media-upload.ts` - Image upload for tweets (X API v2 media upload)
 - `lib/config-store.ts` - Config file management (~/.config/xp/config.json)
 - `lib/cache-store.ts` - Tweet cache management (~/.config/xp/cache/tweets.json)
 - `lib/output.ts` - Machine-readable output formatting

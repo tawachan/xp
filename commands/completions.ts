@@ -42,6 +42,7 @@ complete -c xp -n '__fish_seen_subcommand_from set' -l access-token-secret -d 'A
 
 # Global flags
 complete -c xp -l json -d 'Output in JSON format'
+complete -c xp -l image -r -F -d 'Attach image file (max 4)'
 
 # completions subcommands
 complete -c xp -n '__fish_seen_subcommand_from completions' -a 'fish bash zsh' -d 'Shell type'
@@ -77,7 +78,13 @@ _xp() {
         set)
             COMPREPLY=( $(compgen -W "--api-key= --api-secret= --access-token= --access-token-secret=" -- "\${cur}") )
             ;;
-        tweet|thread|reply|get|delete)
+        tweet|thread|reply)
+            COMPREPLY=( $(compgen -W "--json --image" -- "\${cur}") )
+            ;;
+        --image)
+            COMPREPLY=( $(compgen -f -- "\${cur}") )
+            ;;
+        get|delete)
             COMPREPLY=( $(compgen -W "--json" -- "\${cur}") )
             ;;
     esac
@@ -108,6 +115,7 @@ _xp() {
 
     _arguments -C \\
         '--json[Output in JSON format]' \\
+        '*--image[Attach image file]:file:_files -g "*.{jpg,jpeg,png,gif,webp}"' \\
         '1:command:->command' \\
         '*::arg:->args'
 

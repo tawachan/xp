@@ -1,9 +1,5 @@
-import { tweetCommand } from "./commands/tweet.ts";
-import { threadCommand } from "./commands/thread.ts";
-import { deleteCommand } from "./commands/delete.ts";
-import { getCommand } from "./commands/get.ts";
-import { meCommand } from "./commands/me.ts";
-import { replyCommand } from "./commands/reply.ts";
+import { Commands } from "./commands/commands.ts";
+import { createServices } from "./lib/services.ts";
 import { configSetCommand, configShowCommand } from "./commands/config.ts";
 import { authLoginCommand, authLogoutCommand } from "./commands/auth.ts";
 import { completionsCommand } from "./commands/completions.ts";
@@ -106,6 +102,9 @@ async function main(): Promise<void> {
     throw new Error(`--image is not supported for the "${command}" command`);
   }
 
+  const services = createServices();
+  const cmds = new Commands(services);
+
   switch (command) {
     case "help":
     case "--help":
@@ -123,11 +122,11 @@ async function main(): Promise<void> {
       if (!args[1]) {
         throw new Error("Text is required: xp tweet <text>");
       }
-      await tweetCommand(args[1], jsonFlag, imagePaths.length ? imagePaths : undefined);
+      await cmds.tweet(args[1], jsonFlag, imagePaths.length ? imagePaths : undefined);
       break;
 
     case "thread":
-      await threadCommand(args.slice(1), jsonFlag, imagePaths.length ? imagePaths : undefined);
+      await cmds.thread(args.slice(1), jsonFlag, imagePaths.length ? imagePaths : undefined);
       break;
 
     case "reply":
@@ -137,14 +136,14 @@ async function main(): Promise<void> {
       if (!args[2]) {
         throw new Error("Text is required: xp reply <tweet_id> <text>");
       }
-      await replyCommand(args[1], args[2], jsonFlag, imagePaths.length ? imagePaths : undefined);
+      await cmds.reply(args[1], args[2], jsonFlag, imagePaths.length ? imagePaths : undefined);
       break;
 
     case "get":
       if (!args[1]) {
         throw new Error("Tweet ID is required: xp get <tweet_id>");
       }
-      await getCommand(args[1], jsonFlag);
+      await cmds.get(args[1], jsonFlag);
       break;
 
     case "me": {
@@ -166,7 +165,7 @@ async function main(): Promise<void> {
           throw new Error(`Unknown argument: ${meArgs[i]}\nUsage: xp me [--limit N] [--before <id>] [--after <id>]`);
         }
       }
-      await meCommand({ limit, beforeId, afterId, json: jsonFlag });
+      await cmds.me({ limit, beforeId, afterId, json: jsonFlag });
       break;
     }
 
@@ -175,7 +174,7 @@ async function main(): Promise<void> {
       if (!args[1]) {
         throw new Error("Tweet ID is required: xp delete <tweet_id>");
       }
-      await deleteCommand(args[1], jsonFlag);
+      await cmds.delete(args[1], jsonFlag);
       break;
 
     case "cache":
@@ -224,7 +223,7 @@ async function main(): Promise<void> {
 
     default:
       // Treat as direct tweet text (shorthand: xp "Hello")
-      await tweetCommand(command, jsonFlag, imagePaths.length ? imagePaths : undefined);
+      await cmds.tweet(command, jsonFlag, imagePaths.length ? imagePaths : undefined);
       break;
   }
 }

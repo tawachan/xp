@@ -1,7 +1,7 @@
 import { buildAuthHeader } from "./oauth.ts";
-import { loadConfig } from "./config-store.ts";
 import { parseErrorDetail } from "./x-client.ts";
 import type { OAuthCredentials } from "./oauth.ts";
+import type { Services } from "./services.ts";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const MAX_IMAGES = 4;
@@ -22,10 +22,10 @@ function getMimeType(filePath: string): string {
   return mimeType;
 }
 
-async function validateFile(filePath: string): Promise<void> {
+async function validateFile(services: Services, filePath: string): Promise<void> {
   let stat: Deno.FileInfo;
   try {
-    stat = await Deno.stat(filePath);
+    stat = await services.stat(filePath);
   } catch {
     throw new Error(`File not found: ${filePath}`);
   }
@@ -36,11 +36,11 @@ async function validateFile(filePath: string): Promise<void> {
   getMimeType(filePath);
 }
 
-async function uploadMedia(filePath: string, config: OAuthCredentials): Promise<string> {
+async function uploadMedia(services: Services, filePath: string, config: OAuthCredentials): Promise<string> {
   const mimeType = getMimeType(filePath);
   const url = "https://api.x.com/2/media/upload";
 
-  const fileData = await Deno.readFile(filePath);
+  const fileData = await services.readFile(filePath);
   const form = new FormData();
   form.append("media", new Blob([fileData], { type: mimeType }), filePath.split("/").pop());
   form.append("media_category", "tweet_image");
@@ -48,7 +48,7 @@ async function uploadMedia(filePath: string, config: OAuthCredentials): Promise<
   // OAuth 1.0a — no params in signature for multipart requests
   const authHeader = await buildAuthHeader("POST", url, config);
 
-  const res = await fetch(url, {
+  const res = await services.fetch(url, {
     method: "POST",
     headers: {
       Authorization: authHeader,
@@ -65,20 +65,20 @@ async function uploadMedia(filePath: string, config: OAuthCredentials): Promise<
   return json.data.id;
 }
 
-export async function uploadAllMedia(paths: string[]): Promise<string[]> {
+export async function uploadAllMedia(services: Services, paths: string[]): Promise<string[]> {
   if (paths.length > MAX_IMAGES) {
     throw new Error(`Too many images (${paths.length}/${MAX_IMAGES} max)`);
   }
 
   // Validate all files upfront before uploading any
   for (const path of paths) {
-    await validateFile(path);
+    await validateFile(services, path);
   }
 
-  const config = await loadConfig();
+  const config = await services.loadConfig();
   const mediaIds: string[] = [];
   for (const path of paths) {
-    const id = await uploadMedia(path, config);
+    const id = await uploadMedia(services, path, config);
     mediaIds.push(id);
   }
   return mediaIds;

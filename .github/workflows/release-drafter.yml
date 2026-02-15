@@ -4,18 +4,39 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    types: [opened, reopened, synchronize, edited]
 
 permissions:
-  contents: read
-  pull-requests: read
+  contents: write
+  pull-requests: write
+  issues: write
 
 jobs:
-  update-release-draft:
+  # PR作成・更新時のラベリング
+  label_pr:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pull-requests: read
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Auto-label PR
+        uses: release-drafter/release-drafter@v6
+        with:
+          config-name: release-drafter.yml
+          disable-autolabeler: false
+          disable-releaser: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # mainへのpush時のリリースドラフト更新
+  update_release_draft:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
     steps:
       - uses: release-drafter/release-drafter@v6
+        with:
+          config-name: release-drafter.yml
+          disable-autolabeler: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -100,25 +100,42 @@ export async function getMyTweets(options: GetMyTweetsOptions = {}): Promise<Twe
   }
   const userId = meJson.data.id;
 
-  // Then get their tweets
+  // Then get their tweets, paginating if the API returns fewer than requested
   const tweetsUrl = `${BASE_URL}/users/${userId}/tweets`;
-  const params: Record<string, string> = {
-    "max_results": maxResults.toString(),
-    "tweet.fields": "created_at",
-  };
-  if (beforeId) params["until_id"] = beforeId;
-  if (afterId) params["since_id"] = afterId;
+  const allTweets: TweetData[] = [];
+  let remaining = maxResults;
+  let paginationToken: string | undefined;
 
-  const tweetsAuthHeader = await buildAuthHeader("GET", tweetsUrl, config, params);
-  const queryString = new URLSearchParams(params).toString();
-  const tweetsRes = await fetch(`${tweetsUrl}?${queryString}`, {
-    method: "GET",
-    headers: { Authorization: tweetsAuthHeader },
-  });
+  while (remaining > 0) {
+    // API minimum is 5, so request at least 5 and trim later
+    const perPage = Math.max(Math.min(remaining, 100), 5);
+    const params: Record<string, string> = {
+      "max_results": perPage.toString(),
+      "tweet.fields": "created_at",
+    };
+    if (beforeId) params["until_id"] = beforeId;
+    if (afterId) params["since_id"] = afterId;
+    if (paginationToken) params["pagination_token"] = paginationToken;
 
-  await handleApiError(tweetsRes, "read");
-  const tweetsJson = await tweetsRes.json();
-  return tweetsJson.data ?? [];
+    const tweetsAuthHeader = await buildAuthHeader("GET", tweetsUrl, config, params);
+    const queryString = new URLSearchParams(params).toString();
+    const tweetsRes = await fetch(`${tweetsUrl}?${queryString}`, {
+      method: "GET",
+      headers: { Authorization: tweetsAuthHeader },
+    });
+
+    await handleApiError(tweetsRes, "read");
+    const tweetsJson = await tweetsRes.json();
+    const tweets: TweetData[] = tweetsJson.data ?? [];
+    allTweets.push(...tweets);
+    remaining -= tweets.length;
+
+    const nextToken = tweetsJson.meta?.next_token;
+    if (!nextToken || tweets.length === 0) break;
+    paginationToken = nextToken;
+  }
+
+  return allTweets.slice(0, maxResults);
 }
 
 export async function deleteTweet(tweetId: string): Promise<void> {

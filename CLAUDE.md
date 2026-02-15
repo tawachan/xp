@@ -117,7 +117,7 @@ xp cache clear             # Delete all cached tweets
 
 Output format is identical to `me` and `get` respectively. Supports `--json`.
 
-Cache is stored at `~/.config/xp/cache/tweets.json`.
+Cache is stored at `~/.config/xp/cache/tweets.json` by default. Use `xp config set --cache-dir=PATH` to store cache in a custom location (e.g. a project directory for Git versioning or team sharing).
 
 ### Auth
 
@@ -130,6 +130,8 @@ xp auth logout             # Remove saved credentials
 
 ```bash
 xp config set --api-key=KEY --api-secret=SECRET --access-token=TOKEN --access-token-secret=TOKEN_SECRET
+xp config set --cache-dir=/path/to/cache   # Set custom cache directory
+xp config unset --cache-dir                # Reset cache directory to default
 xp config show             # Show current config (masked)
 ```
 
@@ -198,6 +200,7 @@ xp upgrade
 - Config is stored at `~/.config/xp/config.json`
 - `xp get` uses cache first, avoiding paid API calls for previously fetched tweets
 - Use `xp cache list --json` to get all cached tweets programmatically
+- Use `xp config set --cache-dir=./cache` to store cache in a project directory (e.g. for Git versioning)
 
 ## Development
 

@@ -167,7 +167,7 @@
           <div class="group bg-bg-card border border-border rounded-lg p-6 hover:border-accent/40 transition-colors">
             <div class="text-2xl mb-3">&#128190;</div>
             <h3 class="text-white font-semibold mb-2">Local cache</h3>
-            <p class="text-sm text-muted">Fetched tweets are cached locally. Browse offline with <code class="text-accent text-xs bg-bg px-1.5 py-0.5 rounded">xp cache list</code> — saves paid API calls.</p>
+            <p class="text-sm text-muted">Fetched tweets are cached locally. Browse offline with <code class="text-accent text-xs bg-bg px-1.5 py-0.5 rounded">xp cache list</code> — saves paid API calls. Use <code class="text-accent text-xs bg-bg px-1.5 py-0.5 rounded">--cache-dir</code> to store in your project for Git versioning.</p>
           </div>
 
           <div class="group bg-bg-card border border-border rounded-lg p-6 hover:border-accent/40 transition-colors">
@@ -310,7 +310,7 @@
 
           <div class="bg-bg-card border border-border rounded-lg p-5 hover:border-border-hover transition-colors">
             <code class="font-mono text-sm text-accent">xp cache list</code>
-            <p class="text-sm text-muted mt-1.5">Browse cached tweets offline. <code class="text-accent text-xs bg-bg px-1.5 py-0.5 rounded">xp cache show &lt;id&gt;</code> / <code class="text-accent text-xs bg-bg px-1.5 py-0.5 rounded">xp cache clear</code>.</p>
+            <p class="text-sm text-muted mt-1.5">Browse cached tweets offline. <code class="text-accent text-xs bg-bg px-1.5 py-0.5 rounded">xp cache show &lt;id&gt;</code> / <code class="text-accent text-xs bg-bg px-1.5 py-0.5 rounded">xp cache clear</code>. Set <code class="text-accent text-xs bg-bg px-1.5 py-0.5 rounded">--cache-dir</code> to keep tweets in your project for Git versioning or team sharing.</p>
           </div>
 
           <div class="bg-bg-card border border-border rounded-lg p-5 hover:border-border-hover transition-colors">
@@ -325,7 +325,7 @@
 
           <div class="bg-bg-card border border-border rounded-lg p-5 hover:border-border-hover transition-colors">
             <code class="font-mono text-sm text-accent">xp config show</code>
-            <p class="text-sm text-muted mt-1.5">Show current config (masked). Use <code class="text-accent text-xs bg-bg px-1.5 py-0.5 rounded">xp auth logout</code> to remove credentials.</p>
+            <p class="text-sm text-muted mt-1.5">Show current config (masked). Use <code class="text-accent text-xs bg-bg px-1.5 py-0.5 rounded">xp config set --cache-dir=PATH</code> to customize cache location, <code class="text-accent text-xs bg-bg px-1.5 py-0.5 rounded">xp config unset --cache-dir</code> to reset.</p>
           </div>
 
           <div class="bg-bg-card border border-border rounded-lg p-5 hover:border-border-hover transition-colors">

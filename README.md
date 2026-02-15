@@ -181,7 +181,14 @@ xp cache show <tweet_id>   # Show a specific cached tweet
 xp cache clear             # Delete all cached tweets
 ```
 
-Cache is stored at `~/.config/xp/cache/tweets.json`. `xp delete` also removes the corresponding cache entry.
+Cache is stored at `~/.config/xp/cache/tweets.json` by default. You can change the cache directory to store tweets alongside your project — useful for versioning cached tweets in a Git repository, sharing them across a team, or keeping project-specific tweet archives:
+
+```bash
+xp config set --cache-dir=./tweets-cache    # Store in project directory
+xp config unset --cache-dir                 # Reset to default
+```
+
+`xp delete` also removes the corresponding cache entry.
 
 ### Upgrade
 
@@ -191,11 +198,13 @@ xp upgrade
 
 Downloads and installs the latest release from GitHub.
 
-### Manage credentials
+### Manage config
 
 ```bash
-xp config show     # Show current config (masked)
-xp auth logout     # Remove saved credentials
+xp config show                            # Show current config (masked)
+xp config set --cache-dir=/path/to/cache  # Set custom cache directory
+xp config unset --cache-dir               # Reset cache directory to default
+xp auth logout                            # Remove saved credentials
 ```
 
 ### Help

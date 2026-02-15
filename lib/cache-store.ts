@@ -1,4 +1,5 @@
 import type { TweetData } from "./x-client.ts";
+import { loadPartialConfig } from "./config-store.ts";
 
 interface CachedTweet extends TweetData {
   cached_at: string;
@@ -6,19 +7,35 @@ interface CachedTweet extends TweetData {
 
 type CacheData = Record<string, CachedTweet>;
 
-function getCachePath(): string {
-  const home = Deno.env.get("HOME") ?? Deno.env.get("USERPROFILE") ?? "";
-  return `${home}/.config/xp/cache/tweets.json`;
+function expandHome(path: string): string {
+  if (path.startsWith("~")) {
+    const home = Deno.env.get("HOME") ?? Deno.env.get("USERPROFILE") ?? "";
+    return home + path.slice(1);
+  }
+  return path;
 }
 
-function getCacheDir(): string {
+function defaultCacheDir(): string {
   const home = Deno.env.get("HOME") ?? Deno.env.get("USERPROFILE") ?? "";
   return `${home}/.config/xp/cache`;
 }
 
+async function getCacheDir(): Promise<string> {
+  const config = await loadPartialConfig();
+  if (config.cacheDir) {
+    return expandHome(config.cacheDir);
+  }
+  return defaultCacheDir();
+}
+
+async function getCachePath(): Promise<string> {
+  const dir = await getCacheDir();
+  return `${dir}/tweets.json`;
+}
+
 async function loadCache(): Promise<CacheData> {
   try {
-    const text = await Deno.readTextFile(getCachePath());
+    const text = await Deno.readTextFile(await getCachePath());
     return JSON.parse(text) as CacheData;
   } catch {
     return {};
@@ -26,9 +43,9 @@ async function loadCache(): Promise<CacheData> {
 }
 
 async function saveCache(data: CacheData): Promise<void> {
-  const dir = getCacheDir();
+  const dir = await getCacheDir();
   await Deno.mkdir(dir, { recursive: true });
-  await Deno.writeTextFile(getCachePath(), JSON.stringify(data, null, 2));
+  await Deno.writeTextFile(await getCachePath(), JSON.stringify(data, null, 2));
 }
 
 function toTweetData({ cached_at: _, ...tweet }: CachedTweet): TweetData {
@@ -71,7 +88,7 @@ export async function removeCachedTweet(id: string): Promise<void> {
 
 export async function clearCache(): Promise<void> {
   try {
-    await Deno.remove(getCachePath());
+    await Deno.remove(await getCachePath());
   } catch (e) {
     if (e instanceof Deno.errors.NotFound) {
       return;

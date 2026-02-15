@@ -1,5 +1,5 @@
 import { postTweet } from "../lib/x-client.ts";
-import { services } from "../lib/services.ts";
+import { services } from "../services.ts";
 import { formatTweetResult } from "../lib/output.ts";
 import { uploadAllMedia } from "../lib/media-upload.ts";
 

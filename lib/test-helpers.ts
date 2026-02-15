@@ -1,4 +1,5 @@
-import { services } from "./services.ts";
+import type { Services } from "../services.ts";
+import { services, setServices } from "../services.ts";
 import type { XpConfig } from "./config-store.ts";
 
 export const TEST_CONFIG: XpConfig = {
@@ -38,43 +39,29 @@ type FetchHandler = (
   init?: RequestInit,
 ) => Response | Promise<Response>;
 
-export function stubServices(
+export function createMockServices(
   options: {
     fetch?: FetchHandler;
     files?: Map<string, { size: number; data: Uint8Array }>;
   } = {},
-): () => void {
-  const orig = {
-    loadConfig: services.loadConfig,
-    cacheTweet: services.cacheTweet,
-    cacheTweets: services.cacheTweets,
-    fetch: services.fetch,
-    stat: services.stat,
-    readFile: services.readFile,
-  };
-
-  services.loadConfig = () => Promise.resolve(TEST_CONFIG);
-  services.cacheTweet = () => Promise.resolve();
-  services.cacheTweets = () => Promise.resolve();
-
-  if (options.fetch) {
-    const handler = options.fetch;
-    services.fetch = (
-      input: string | URL | Request,
-      init?: RequestInit,
-    ): Promise<Response> => {
+): Services {
+  const mockFetch = options.fetch
+    ? (input: string | URL | Request, init?: RequestInit): Promise<Response> => {
+      const handler = options.fetch!;
       const url = typeof input === "string"
         ? input
         : input instanceof URL
         ? input.toString()
         : (input as Request).url;
       return Promise.resolve(handler(url, init));
+    }
+    : (_input: string | URL | Request, _init?: RequestInit): Promise<Response> => {
+      return Promise.reject(new Error("fetch not mocked"));
     };
-  }
 
-  if (options.files) {
-    const fileMap = options.files;
-    services.stat = (path: string | URL): Promise<Deno.FileInfo> => {
+  const fileMap = options.files;
+  const mockStat = fileMap
+    ? (path: string | URL): Promise<Deno.FileInfo> => {
       const p = typeof path === "string" ? path : path.toString();
       const f = fileMap.get(p);
       if (!f) {
@@ -85,18 +72,49 @@ export function stubServices(
         isFile: true,
         isDirectory: false,
       } as Deno.FileInfo);
+    }
+    : (path: string | URL): Promise<Deno.FileInfo> => {
+      return Promise.reject(
+        new Deno.errors.NotFound(
+          `not found: ${typeof path === "string" ? path : path.toString()}`,
+        ),
+      );
     };
-    services.readFile = (path: string | URL): Promise<Uint8Array> => {
+
+  const mockReadFile = fileMap
+    ? (path: string | URL): Promise<Uint8Array> => {
       const p = typeof path === "string" ? path : path.toString();
       const f = fileMap.get(p);
       if (!f) {
         return Promise.reject(new Deno.errors.NotFound(`not found: ${p}`));
       }
       return Promise.resolve(f.data);
+    }
+    : (path: string | URL): Promise<Uint8Array> => {
+      return Promise.reject(
+        new Deno.errors.NotFound(
+          `not found: ${typeof path === "string" ? path : path.toString()}`,
+        ),
+      );
     };
-  }
 
-  return () => {
-    Object.assign(services, orig);
+  return {
+    loadConfig: () => Promise.resolve(TEST_CONFIG),
+    cacheTweet: () => Promise.resolve(),
+    cacheTweets: () => Promise.resolve(),
+    fetch: mockFetch,
+    stat: mockStat,
+    readFile: mockReadFile,
   };
+}
+
+export function stubServices(
+  options: {
+    fetch?: FetchHandler;
+    files?: Map<string, { size: number; data: Uint8Array }>;
+  } = {},
+): () => void {
+  const orig = services;
+  setServices(createMockServices(options));
+  return () => setServices(orig);
 }

@@ -1,5 +1,5 @@
 import { buildAuthHeader } from "./oauth.ts";
-import { services } from "./services.ts";
+import { services } from "../services.ts";
 
 const BASE_URL = "https://api.x.com/2";
 

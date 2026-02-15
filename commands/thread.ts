@@ -14,14 +14,14 @@ export async function threadCommand(texts: string[], json = false, imagePaths?: 
   }
 
   // Upload images for the first tweet only
-  const mediaIds = imagePaths?.length ? await uploadAllMedia(imagePaths) : undefined;
+  const mediaIds = imagePaths?.length ? await uploadAllMedia(services, imagePaths) : undefined;
 
   const results: Array<{ id: string }> = [];
   let previousId: string | undefined;
   const now = new Date().toISOString();
 
   for (let i = 0; i < texts.length; i++) {
-    const result = await postTweet(texts[i]!, previousId, i === 0 ? mediaIds : undefined);
+    const result = await postTweet(services, texts[i]!, previousId, i === 0 ? mediaIds : undefined);
     results.push(result);
     await services.cacheTweet({ id: result.id, text: texts[i]!, created_at: now });
     previousId = result.id;

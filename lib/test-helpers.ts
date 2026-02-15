@@ -1,5 +1,4 @@
 import type { Services } from "../services.ts";
-import { services, setServices } from "../services.ts";
 import type { XpConfig } from "./config-store.ts";
 
 export const TEST_CONFIG: XpConfig = {
@@ -106,15 +105,4 @@ export function createMockServices(
     stat: mockStat,
     readFile: mockReadFile,
   };
-}
-
-export function stubServices(
-  options: {
-    fetch?: FetchHandler;
-    files?: Map<string, { size: number; data: Uint8Array }>;
-  } = {},
-): () => void {
-  const orig = services;
-  setServices(createMockServices(options));
-  return () => setServices(orig);
 }

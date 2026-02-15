@@ -12,7 +12,9 @@ export interface Services {
   readFile(path: string | URL): Promise<Uint8Array>;
 }
 
-function createServices(): Services {
+export const services: Services = createServices();
+
+export function createServices(): Services {
   return {
     loadConfig,
     cacheTweet,
@@ -30,14 +32,4 @@ function createServices(): Services {
       return Deno.readFile(path);
     },
   };
-}
-
-export let services: Services = createServices();
-
-export function setServices(s: Services): void {
-  services = s;
-}
-
-export function resetServices(): void {
-  services = createServices();
 }

@@ -4,25 +4,25 @@ import {
 } from "https://deno.land/std@0.224.0/assert/mod.ts";
 import {
   afterEach,
-  beforeEach,
   describe,
   it,
 } from "https://deno.land/std@0.224.0/testing/bdd.ts";
 import { tweetCommand } from "./tweet.ts";
-import { captureConsole, jsonResponse, stubServices } from "../lib/test-helpers.ts";
+import { services } from "../services.ts";
+import { captureConsole, createMockServices, jsonResponse } from "../lib/test-helpers.ts";
 
 describe("tweetCommand", () => {
-  let restore: () => void;
   let restoreConsole: (() => void) | undefined;
+  const orig = { ...services };
 
   afterEach(() => {
-    restore();
+    Object.assign(services, orig);
     restoreConsole?.();
     restoreConsole = undefined;
   });
 
   it("posts a text-only tweet", async () => {
-    restore = stubServices({
+    const mock = createMockServices({
       fetch: (url, init) => {
         if (url === "https://api.x.com/2/tweets") {
           const body = JSON.parse(init?.body as string);
@@ -32,6 +32,7 @@ describe("tweetCommand", () => {
         return jsonResponse({}, 404);
       },
     });
+    Object.assign(services, mock);
 
     const { output, restore: rc } = captureConsole();
     restoreConsole = rc;
@@ -43,7 +44,7 @@ describe("tweetCommand", () => {
 
   it("posts a tweet with an image", async () => {
     const calls: string[] = [];
-    restore = stubServices({
+    const mock = createMockServices({
       files: new Map([
         ["img.jpg", { size: 1024, data: new Uint8Array(1024) }],
       ]),
@@ -60,6 +61,7 @@ describe("tweetCommand", () => {
         return jsonResponse({}, 404);
       },
     });
+    Object.assign(services, mock);
 
     const { output, restore: rc } = captureConsole();
     restoreConsole = rc;
@@ -71,8 +73,6 @@ describe("tweetCommand", () => {
   });
 
   it("rejects empty text", async () => {
-    restore = stubServices();
-
     await assertRejects(
       () => tweetCommand(""),
       Error,
@@ -81,7 +81,6 @@ describe("tweetCommand", () => {
   });
 
   it("rejects text over 280 characters", async () => {
-    restore = stubServices();
     const longText = "a".repeat(281);
 
     await assertRejects(

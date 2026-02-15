@@ -1,5 +1,5 @@
 import { buildAuthHeader } from "./oauth.ts";
-import { services } from "../services.ts";
+import type { Services } from "../services.ts";
 
 const BASE_URL = "https://api.x.com/2";
 
@@ -10,6 +10,7 @@ export function validateTweetId(tweetId: string): void {
 }
 
 export async function postTweet(
+  services: Services,
   text: string,
   replyToId?: string,
   mediaIds?: string[],
@@ -51,7 +52,7 @@ export interface TweetData {
   author_id?: string;
 }
 
-export async function getTweet(tweetId: string): Promise<TweetData> {
+export async function getTweet(services: Services, tweetId: string): Promise<TweetData> {
   validateTweetId(tweetId);
   const config = await services.loadConfig();
   const url = `${BASE_URL}/tweets/${tweetId}`;
@@ -79,7 +80,7 @@ export interface GetMyTweetsOptions {
   afterId?: string;
 }
 
-export async function getMyTweets(options: GetMyTweetsOptions = {}): Promise<TweetData[]> {
+export async function getMyTweets(services: Services, options: GetMyTweetsOptions = {}): Promise<TweetData[]> {
   const { maxResults = 10, beforeId, afterId } = options;
   if (beforeId) validateTweetId(beforeId);
   if (afterId) validateTweetId(afterId);
@@ -121,7 +122,7 @@ export async function getMyTweets(options: GetMyTweetsOptions = {}): Promise<Twe
   return tweetsJson.data ?? [];
 }
 
-export async function deleteTweet(tweetId: string): Promise<void> {
+export async function deleteTweet(services: Services, tweetId: string): Promise<void> {
   validateTweetId(tweetId);
   const config = await services.loadConfig();
   const url = `${BASE_URL}/tweets/${tweetId}`;

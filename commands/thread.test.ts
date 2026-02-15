@@ -4,26 +4,26 @@ import {
 } from "https://deno.land/std@0.224.0/assert/mod.ts";
 import {
   afterEach,
-  beforeEach,
   describe,
   it,
 } from "https://deno.land/std@0.224.0/testing/bdd.ts";
 import { threadCommand } from "./thread.ts";
-import { captureConsole, jsonResponse, stubServices } from "../lib/test-helpers.ts";
+import { services } from "../services.ts";
+import { captureConsole, createMockServices, jsonResponse } from "../lib/test-helpers.ts";
 
 describe("threadCommand", () => {
-  let restore: () => void;
   let restoreConsole: (() => void) | undefined;
+  const orig = { ...services };
 
   afterEach(() => {
-    restore();
+    Object.assign(services, orig);
     restoreConsole?.();
     restoreConsole = undefined;
   });
 
   it("posts a thread with 2 tweets", async () => {
     let callIndex = 0;
-    restore = stubServices({
+    const mock = createMockServices({
       fetch: (_url, init) => {
         const body = JSON.parse(init?.body as string);
         callIndex++;
@@ -37,6 +37,7 @@ describe("threadCommand", () => {
         return jsonResponse({ data: { id: "222" } });
       },
     });
+    Object.assign(services, mock);
 
     const { output, restore: rc } = captureConsole();
     restoreConsole = rc;
@@ -51,7 +52,7 @@ describe("threadCommand", () => {
   it("attaches images only to the first tweet", async () => {
     const requestBodies: Array<Record<string, unknown>> = [];
     let tweetCount = 0;
-    restore = stubServices({
+    const mock = createMockServices({
       files: new Map([
         ["cover.jpg", { size: 1024, data: new Uint8Array(1024) }],
       ]),
@@ -65,6 +66,7 @@ describe("threadCommand", () => {
         return jsonResponse({ data: { id: `${100 + tweetCount}` } });
       },
     });
+    Object.assign(services, mock);
 
     const { output, restore: rc } = captureConsole();
     restoreConsole = rc;
@@ -78,8 +80,6 @@ describe("threadCommand", () => {
   });
 
   it("rejects fewer than 2 texts", async () => {
-    restore = stubServices();
-
     await assertRejects(
       () => threadCommand(["Only one"]),
       Error,
@@ -88,8 +88,6 @@ describe("threadCommand", () => {
   });
 
   it("rejects if any text exceeds 280 characters", async () => {
-    restore = stubServices();
-
     await assertRejects(
       () => threadCommand(["OK", "x".repeat(281)]),
       Error,

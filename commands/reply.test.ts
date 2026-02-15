@@ -4,25 +4,25 @@ import {
 } from "https://deno.land/std@0.224.0/assert/mod.ts";
 import {
   afterEach,
-  beforeEach,
   describe,
   it,
 } from "https://deno.land/std@0.224.0/testing/bdd.ts";
 import { replyCommand } from "./reply.ts";
-import { captureConsole, jsonResponse, stubServices } from "../lib/test-helpers.ts";
+import { services } from "../services.ts";
+import { captureConsole, createMockServices, jsonResponse } from "../lib/test-helpers.ts";
 
 describe("replyCommand", () => {
-  let restore: () => void;
   let restoreConsole: (() => void) | undefined;
+  const orig = { ...services };
 
   afterEach(() => {
-    restore();
+    Object.assign(services, orig);
     restoreConsole?.();
     restoreConsole = undefined;
   });
 
   it("replies to a tweet without image", async () => {
-    restore = stubServices({
+    const mock = createMockServices({
       fetch: (_url, init) => {
         const body = JSON.parse(init?.body as string);
         assertEquals(body.text, "Nice post!");
@@ -30,6 +30,7 @@ describe("replyCommand", () => {
         return jsonResponse({ data: { id: "300" } });
       },
     });
+    Object.assign(services, mock);
 
     const { output, restore: rc } = captureConsole();
     restoreConsole = rc;
@@ -40,7 +41,7 @@ describe("replyCommand", () => {
 
   it("replies with an image", async () => {
     const calls: string[] = [];
-    restore = stubServices({
+    const mock = createMockServices({
       files: new Map([
         ["reply.png", { size: 512, data: new Uint8Array(512) }],
       ]),
@@ -55,6 +56,7 @@ describe("replyCommand", () => {
         return jsonResponse({ data: { id: "301" } });
       },
     });
+    Object.assign(services, mock);
 
     const { output, restore: rc } = captureConsole();
     restoreConsole = rc;
@@ -65,8 +67,6 @@ describe("replyCommand", () => {
   });
 
   it("rejects empty text", async () => {
-    restore = stubServices();
-
     await assertRejects(
       () => replyCommand("12345", ""),
       Error,
@@ -75,8 +75,6 @@ describe("replyCommand", () => {
   });
 
   it("rejects text over 280 characters", async () => {
-    restore = stubServices();
-
     await assertRejects(
       () => replyCommand("12345", "x".repeat(281)),
       Error,

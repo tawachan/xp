@@ -1,6 +1,7 @@
 import { getMyTweets } from "../lib/x-client.ts";
 import { cacheTweets } from "../lib/cache-store.ts";
 import { formatTweetList } from "../lib/output.ts";
+import { services } from "../services.ts";
 
 export interface MeOptions {
   limit?: string;
@@ -15,7 +16,7 @@ export async function meCommand(options: MeOptions = {}): Promise<void> {
   if (isNaN(maxResults) || maxResults < 5 || maxResults > 100) {
     throw new Error("Limit must be between 5 and 100 (default: 10)");
   }
-  const tweets = await getMyTweets({ maxResults, beforeId, afterId });
+  const tweets = await getMyTweets(services, { maxResults, beforeId, afterId });
   await cacheTweets(tweets);
   console.log(formatTweetList(tweets, json));
 }

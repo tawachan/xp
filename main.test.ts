@@ -4,26 +4,24 @@ import {
 } from "https://deno.land/std@0.224.0/assert/mod.ts";
 import {
   afterEach,
-  beforeEach,
   describe,
   it,
 } from "https://deno.land/std@0.224.0/testing/bdd.ts";
 import { main } from "./main.ts";
-import { captureConsole, jsonResponse, stubServices } from "./lib/test-helpers.ts";
+import { services } from "./services.ts";
+import { captureConsole, createMockServices, jsonResponse } from "./lib/test-helpers.ts";
 
 describe("main", () => {
-  let restore: () => void;
   let restoreConsole: (() => void) | undefined;
+  const orig = { ...services };
 
   afterEach(() => {
-    restore();
+    Object.assign(services, orig);
     restoreConsole?.();
     restoreConsole = undefined;
   });
 
   it("rejects --image with get command", async () => {
-    restore = stubServices();
-
     await assertRejects(
       () => main(["get", "123", "--image", "photo.jpg"]),
       Error,
@@ -32,8 +30,6 @@ describe("main", () => {
   });
 
   it("rejects --image with delete command", async () => {
-    restore = stubServices();
-
     await assertRejects(
       () => main(["delete", "123", "--image", "photo.jpg"]),
       Error,
@@ -42,7 +38,7 @@ describe("main", () => {
   });
 
   it("shorthand tweet posts via default branch", async () => {
-    restore = stubServices({
+    const mock = createMockServices({
       fetch: (url, init) => {
         if (url === "https://api.x.com/2/tweets") {
           const body = JSON.parse(init?.body as string);
@@ -52,6 +48,7 @@ describe("main", () => {
         return jsonResponse({}, 404);
       },
     });
+    Object.assign(services, mock);
 
     const { output, restore: rc } = captureConsole();
     restoreConsole = rc;

@@ -3,6 +3,7 @@ export interface XpConfig {
   apiSecret: string;
   accessToken: string;
   accessTokenSecret: string;
+  cacheDir?: string;
 }
 
 function getConfigDir(): string {
@@ -68,6 +69,32 @@ export async function saveConfig(config: XpConfig): Promise<void> {
   const path = getConfigPath();
   await Deno.writeTextFile(path, JSON.stringify(config, null, 2));
   // Set file permissions to 600 (owner read/write only)
+  if (Deno.build.os !== "windows") {
+    await Deno.chmod(path, 0o600);
+  }
+}
+
+export async function mergeConfig(partial: Partial<XpConfig>): Promise<void> {
+  const existing = await loadPartialConfig();
+  const merged = { ...existing, ...partial };
+  const dir = getConfigDir();
+  await Deno.mkdir(dir, { recursive: true });
+  const path = getConfigPath();
+  await Deno.writeTextFile(path, JSON.stringify(merged, null, 2));
+  if (Deno.build.os !== "windows") {
+    await Deno.chmod(path, 0o600);
+  }
+}
+
+export async function unsetConfigKeys(keys: (keyof XpConfig)[]): Promise<void> {
+  const existing = await loadPartialConfig();
+  for (const key of keys) {
+    delete existing[key];
+  }
+  const dir = getConfigDir();
+  await Deno.mkdir(dir, { recursive: true });
+  const path = getConfigPath();
+  await Deno.writeTextFile(path, JSON.stringify(existing, null, 2));
   if (Deno.build.os !== "windows") {
     await Deno.chmod(path, 0o600);
   }

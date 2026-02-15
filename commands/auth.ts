@@ -1,5 +1,5 @@
 import { buildAuthHeader } from "../lib/oauth.ts";
-import { deleteConfig, loadPartialConfig, saveConfig } from "../lib/config-store.ts";
+import { deleteConfig, loadPartialConfig, mergeConfig } from "../lib/config-store.ts";
 
 const REQUEST_TOKEN_URL = "https://api.twitter.com/oauth/request_token";
 const AUTHORIZE_URL = "https://api.twitter.com/oauth/authorize";
@@ -121,8 +121,8 @@ export async function authLoginCommand(): Promise<void> {
     throw new Error("Invalid access token response");
   }
 
-  // Step 5: Save config
-  await saveConfig({
+  // Step 5: Save config (mergeConfig preserves existing settings like cacheDir)
+  await mergeConfig({
     apiKey,
     apiSecret,
     accessToken,

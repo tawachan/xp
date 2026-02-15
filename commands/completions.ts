@@ -32,6 +32,7 @@ complete -c xp -n '__fish_seen_subcommand_from cache' -a clear -d 'Clear all cac
 
 # config subcommands
 complete -c xp -n '__fish_seen_subcommand_from config' -a set -d 'Set API credentials'
+complete -c xp -n '__fish_seen_subcommand_from config' -a unset -d 'Unset config values'
 complete -c xp -n '__fish_seen_subcommand_from config' -a show -d 'Show current config'
 
 # config set flags
@@ -39,6 +40,10 @@ complete -c xp -n '__fish_seen_subcommand_from set' -l api-key -d 'API Key'
 complete -c xp -n '__fish_seen_subcommand_from set' -l api-secret -d 'API Secret'
 complete -c xp -n '__fish_seen_subcommand_from set' -l access-token -d 'Access Token'
 complete -c xp -n '__fish_seen_subcommand_from set' -l access-token-secret -d 'Access Token Secret'
+complete -c xp -n '__fish_seen_subcommand_from set' -l cache-dir -d 'Custom cache directory'
+
+# config unset flags
+complete -c xp -n '__fish_seen_subcommand_from unset' -l cache-dir -d 'Reset cache directory to default'
 
 # Global flags
 complete -c xp -l json -d 'Output in JSON format'
@@ -70,13 +75,16 @@ _xp() {
             COMPREPLY=( $(compgen -W "list show clear" -- "\${cur}") )
             ;;
         config)
-            COMPREPLY=( $(compgen -W "set show" -- "\${cur}") )
+            COMPREPLY=( $(compgen -W "set unset show" -- "\${cur}") )
             ;;
         completions)
             COMPREPLY=( $(compgen -W "fish bash zsh" -- "\${cur}") )
             ;;
         set)
-            COMPREPLY=( $(compgen -W "--api-key= --api-secret= --access-token= --access-token-secret=" -- "\${cur}") )
+            COMPREPLY=( $(compgen -W "--api-key= --api-secret= --access-token= --access-token-secret= --cache-dir=" -- "\${cur}") )
+            ;;
+        unset)
+            COMPREPLY=( $(compgen -W "--cache-dir" -- "\${cur}") )
             ;;
         tweet|thread|reply)
             COMPREPLY=( $(compgen -W "--json --image" -- "\${cur}") )
@@ -135,7 +143,7 @@ _xp() {
                     _values 'subcommand' 'list[List cached tweets]' 'show[Show a cached tweet]' 'clear[Clear all cached tweets]'
                     ;;
                 config)
-                    _values 'subcommand' 'set[Set API credentials]' 'show[Show current config]'
+                    _values 'subcommand' 'set[Set API credentials]' 'unset[Unset config values]' 'show[Show current config]'
                     ;;
                 completions)
                     _values 'shell' 'fish' 'bash' 'zsh'

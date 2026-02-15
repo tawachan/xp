@@ -4,7 +4,7 @@ import { deleteCommand } from "./commands/delete.ts";
 import { getCommand } from "./commands/get.ts";
 import { meCommand } from "./commands/me.ts";
 import { replyCommand } from "./commands/reply.ts";
-import { configSetCommand, configShowCommand } from "./commands/config.ts";
+import { configSetCommand, configShowCommand, configUnsetCommand } from "./commands/config.ts";
 import { authLoginCommand, authLogoutCommand } from "./commands/auth.ts";
 import { completionsCommand } from "./commands/completions.ts";
 import { upgradeCommand } from "./commands/upgrade.ts";
@@ -32,6 +32,7 @@ Usage:
   xp auth login                      Authenticate via browser (OAuth PIN flow)
   xp auth logout                     Remove saved credentials
   xp config set [flags]              Set API credentials
+  xp config unset [flags]            Unset config values
   xp config show                     Show current config
   xp upgrade                         Upgrade to the latest version
   xp completions <shell>             Generate shell completions (fish/bash/zsh)
@@ -47,6 +48,7 @@ Config flags (for config set):
   --api-secret=VALUE
   --access-token=VALUE
   --access-token-secret=VALUE
+  --cache-dir=PATH                   Custom cache directory
 
 Setup:
   xp auth login
@@ -215,10 +217,12 @@ async function main(): Promise<void> {
     case "config":
       if (args[1] === "set") {
         await configSetCommand(args.slice(2));
+      } else if (args[1] === "unset") {
+        await configUnsetCommand(args.slice(2));
       } else if (args[1] === "show") {
         await configShowCommand();
       } else {
-        throw new Error("Usage: xp config set | xp config show");
+        throw new Error("Usage: xp config set | xp config unset | xp config show");
       }
       break;
 

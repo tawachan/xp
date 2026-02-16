@@ -79,7 +79,7 @@ export async function listCachedTweets(): Promise<TweetData[]> {
     .sort((a, b) => {
       const aKey = a.created_at ?? a.cached_at;
       const bKey = b.created_at ?? b.cached_at;
-      return bKey > aKey ? 1 : -1;
+      return bKey > aKey ? 1 : bKey < aKey ? -1 : 0;
     })
     .map(toTweetData);
 }

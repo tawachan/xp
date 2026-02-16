@@ -11,7 +11,7 @@ export interface MentionsOptions {
 
 export async function mentionsCommand(options: MentionsOptions = {}): Promise<void> {
   const { limit, beforeId, afterId, json = false } = options;
-  const maxResults = limit ? parseInt(limit) : 10;
+  const maxResults = limit ? Number(limit) : 10;
   if (isNaN(maxResults) || maxResults < 5 || maxResults > 100) {
     throw new Error("Limit must be between 5 and 100 (default: 10)");
   }

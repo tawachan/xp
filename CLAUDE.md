@@ -71,6 +71,7 @@ Output:
 ```text
 tweet_id: 1234567890123456789
 author_id: 9876543210
+author_username: johndoe
 text: Hello world
 created_at: 2024-01-15T10:30:00.000Z
 url: https://x.com/i/status/1234567890123456789
@@ -79,8 +80,8 @@ url: https://x.com/i/status/1234567890123456789
 ### List your recent tweets (requires paid plan)
 
 ```bash
-xp me                                      # default: 10 tweets
-xp me --limit 20                           # up to 100
+xp me                                      # default: 100 tweets (API max per request)
+xp me --limit 20                           # 5-100
 xp me --before 1234567890123456789         # tweets older than this ID
 xp me --after 1234567890123456789          # tweets newer than this ID
 xp me --limit 20 --before 1234567890123456789  # combine limit with cursor
@@ -91,7 +92,32 @@ Output:
 [1/10]
 tweet_id: 1234567890123456789
 author_id: 9876543210
+author_username: tawachan39
 text: Hello world
+created_at: 2024-01-15T10:30:00.000Z
+url: https://x.com/i/status/1234567890123456789
+
+[2/10]
+...
+```
+
+### List your mentions (requires paid plan)
+
+```bash
+xp mentions                                    # default: 100 mentions (API max per request)
+xp mentions --limit 20                         # 5-100
+xp mentions --before 1234567890123456789       # mentions older than this ID
+xp mentions --after 1234567890123456789        # mentions newer than this ID
+xp mentions --limit 20 --before 1234567890123456789  # combine limit with cursor
+```
+
+Output:
+```text
+[1/10]
+tweet_id: 1234567890123456789
+author_id: 9876543210
+author_username: johndoe
+text: @you Great thread!
 created_at: 2024-01-15T10:30:00.000Z
 url: https://x.com/i/status/1234567890123456789
 
@@ -109,7 +135,7 @@ Output: `deleted: 1234567890123456789`
 
 ### Cache (offline access to previously fetched tweets)
 
-`xp get` caches tweets automatically. `xp me` also saves all fetched tweets to cache.
+`xp get` caches tweets automatically. `xp me` and `xp mentions` also save all fetched tweets to cache.
 
 ```bash
 xp cache list                              # List all cached tweets (sorted by created_at, newest first)
@@ -155,7 +181,7 @@ Common errors:
 - `Permission denied` → app needs Read and Write access
 - `Not found` → tweet deleted or ID is invalid
 - `Bad request` → malformed request (details included)
-- `This feature requires a paid X API plan` → `get`/`me` need Pay-Per-Use or Basic
+- `This feature requires a paid X API plan` → `get`/`me`/`mentions` need Pay-Per-Use or Basic
 - `Rate limit exceeded` → wait until reset time shown
 - `Text is too long` → tweet exceeds 280 characters
 - `File not found` → image file path does not exist
@@ -182,7 +208,15 @@ xp me --json
 ```
 
 ```json
-[{"tweet_id":"123","author_id":"456","text":"Hello","created_at":"2024-01-15T10:30:00.000Z","url":"https://x.com/i/status/123"}]
+[{"tweet_id":"123","author_id":"456","author_username":"tawachan39","text":"Hello","created_at":"2024-01-15T10:30:00.000Z","url":"https://x.com/i/status/123"}]
+```
+
+```bash
+xp mentions --json
+```
+
+```json
+[{"tweet_id":"123","author_id":"456","author_username":"johndoe","text":"@you Hello!","created_at":"2024-01-15T10:30:00.000Z","url":"https://x.com/i/status/123"}]
 ```
 
 Errors with `--json` also output JSON to stderr:
@@ -221,7 +255,7 @@ deno task compile        # Compile to binary
 ## Project Structure
 
 - `main.ts` - Entry point, command routing
-- `commands/` - Command implementations (tweet, thread, reply, get, me, delete, cache, config, auth, upgrade, completions)
+- `commands/` - Command implementations (tweet, thread, reply, get, me, mentions, delete, cache, config, auth, upgrade, completions)
 - `lib/oauth.ts` - OAuth 1.0a signatures (WebCrypto API, zero npm deps)
 - `lib/x-client.ts` - X API v2 HTTP client
 - `lib/media-upload.ts` - Image upload for tweets (X API v2 media upload)

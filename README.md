@@ -156,12 +156,26 @@ xp get 1234567890123456789
 ### List your recent tweets
 
 ```bash
-xp me                                      # default: 10 tweets
-xp me --limit 20                           # up to 100
+xp me                                      # default: 100 tweets (API max per request)
+xp me --limit 20                           # 5-100
 xp me --before 1234567890123456789         # older tweets (cursor-based)
 xp me --after 1234567890123456789          # newer tweets
 xp me --limit 20 --before 1234567890123456789
 ```
+
+> Requires a paid API plan (Pay-Per-Use or Basic).
+
+### List your mentions
+
+```bash
+xp mentions                                    # default: 100 mentions (API max per request)
+xp mentions --limit 20                         # 5-100
+xp mentions --before 1234567890123456789       # older mentions (cursor-based)
+xp mentions --after 1234567890123456789        # newer mentions
+xp mentions --limit 20 --before 1234567890123456789
+```
+
+All read commands (`get`, `me`, `mentions`) include `author_username` in the output.
 
 > Requires a paid API plan (Pay-Per-Use or Basic).
 
@@ -173,7 +187,7 @@ xp delete 1234567890123456789
 
 ### Cache
 
-`xp get` and `xp me` automatically cache fetched tweets locally. Posting (`xp tweet` / `thread` / `reply`) also caches. This reduces paid API calls for previously fetched tweets.
+`xp get`, `xp me`, and `xp mentions` automatically cache fetched tweets locally. Posting (`xp tweet` / `thread` / `reply`) also caches. This reduces paid API calls for previously fetched tweets.
 
 ```bash
 xp cache list                              # List all cached tweets (newest first)
@@ -238,7 +252,7 @@ xp "Hello" --json
 # {"tweet_id":"1234567890123456789","url":"https://x.com/i/status/1234567890123456789"}
 
 xp me --json
-# [{"tweet_id":"123...","text":"Hello","created_at":"...","url":"..."},...]
+# [{"tweet_id":"123...","author_id":"456...","author_username":"tawachan39","text":"Hello","created_at":"...","url":"..."},...]
 
 xp me --json | jq '.[0].text'
 # "Hello"
@@ -321,6 +335,7 @@ graph TD
     A --> R[commands/reply.ts]
     A --> GT[commands/get.ts]
     A --> M[commands/me.ts]
+    A --> MN[commands/mentions.ts]
     A --> D[commands/delete.ts]
     A --> CA[commands/cache.ts]
     A --> E[commands/config.ts]
@@ -336,6 +351,7 @@ graph TD
     R --> G
     GT --> G
     M --> G
+    MN --> G
     D --> G
     F --> H[lib/oauth.ts<br/>OAuth 1.0a Signatures]
 
@@ -349,6 +365,7 @@ graph TD
 
     GT --> CS[lib/cache-store.ts<br/>Tweet Cache]
     M --> CS
+    MN --> CS
     B --> CS
     C --> CS
     R --> CS
@@ -362,6 +379,7 @@ graph TD
     R --> J
     GT --> J
     M --> J
+    MN --> J
     D --> J
     CA --> J
 

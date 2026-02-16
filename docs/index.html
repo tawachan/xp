@@ -155,7 +155,7 @@
           <div class="group bg-bg-card border border-border rounded-lg p-6 hover:border-accent/40 transition-colors">
             <div class="text-2xl mb-3">&#128172;</div>
             <h3 class="text-white font-semibold mb-2">Read &amp; Reply</h3>
-            <p class="text-sm text-muted"><code class="text-accent text-xs bg-bg px-1.5 py-0.5 rounded">xp get</code>, <code class="text-accent text-xs bg-bg px-1.5 py-0.5 rounded">xp me</code>, <code class="text-accent text-xs bg-bg px-1.5 py-0.5 rounded">xp reply</code> for full workflow.</p>
+            <p class="text-sm text-muted"><code class="text-accent text-xs bg-bg px-1.5 py-0.5 rounded">xp get</code>, <code class="text-accent text-xs bg-bg px-1.5 py-0.5 rounded">xp me</code>, <code class="text-accent text-xs bg-bg px-1.5 py-0.5 rounded">xp mentions</code>, <code class="text-accent text-xs bg-bg px-1.5 py-0.5 rounded">xp reply</code> for full workflow.</p>
           </div>
 
           <div class="group bg-bg-card border border-border rounded-lg p-6 hover:border-accent/40 transition-colors">
@@ -306,6 +306,11 @@
           <div class="bg-bg-card border border-border rounded-lg p-5 hover:border-border-hover transition-colors">
             <code class="font-mono text-sm text-accent">xp me --json | jq '.[0].text'</code>
             <p class="text-sm text-muted mt-1.5">List your recent tweets. Use <code class="text-accent text-xs bg-bg px-1.5 py-0.5 rounded">--limit N</code> to control count, <code class="text-accent text-xs bg-bg px-1.5 py-0.5 rounded">--before</code> / <code class="text-accent text-xs bg-bg px-1.5 py-0.5 rounded">--after</code> to paginate.</p>
+          </div>
+
+          <div class="bg-bg-card border border-border rounded-lg p-5 hover:border-border-hover transition-colors">
+            <code class="font-mono text-sm text-accent">xp mentions --json | jq '.[0].author_username'</code>
+            <p class="text-sm text-muted mt-1.5">List your mentions. All read commands include <code class="text-accent text-xs bg-bg px-1.5 py-0.5 rounded">author_username</code>. Same flags as <code class="text-accent text-xs bg-bg px-1.5 py-0.5 rounded">me</code>.</p>
           </div>
 
           <div class="bg-bg-card border border-border rounded-lg p-5 hover:border-border-hover transition-colors">

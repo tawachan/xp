@@ -30,12 +30,13 @@ export function formatThreadResult(results: Array<{ id: string }>, json = false)
 }
 
 export function formatTweetData(
-  data: { id: string; text: string; created_at?: string; author_id?: string },
+  data: { id: string; text: string; created_at?: string; author_id?: string; author_username?: string },
   json = false,
 ): string {
   if (json) {
     const obj: Record<string, string> = { tweet_id: data.id };
     if (data.author_id) obj.author_id = data.author_id;
+    if (data.author_username) obj.author_username = data.author_username;
     obj.text = data.text;
     if (data.created_at) obj.created_at = data.created_at;
     obj.url = tweetUrl(data.id);
@@ -47,6 +48,9 @@ export function formatTweetData(
   if (data.author_id) {
     lines.push(`author_id: ${data.author_id}`);
   }
+  if (data.author_username) {
+    lines.push(`author_username: ${data.author_username}`);
+  }
   lines.push(`text: ${data.text}`);
   if (data.created_at) {
     lines.push(`created_at: ${data.created_at}`);
@@ -56,7 +60,7 @@ export function formatTweetData(
 }
 
 export function formatTweetList(
-  tweets: Array<{ id: string; text: string; created_at?: string; author_id?: string }>,
+  tweets: Array<{ id: string; text: string; created_at?: string; author_id?: string; author_username?: string }>,
   json = false,
 ): string {
   if (json) {
@@ -64,6 +68,7 @@ export function formatTweetList(
       tweets.map((t) => {
         const obj: Record<string, string> = { tweet_id: t.id };
         if (t.author_id) obj.author_id = t.author_id;
+        if (t.author_username) obj.author_username = t.author_username;
         obj.text = t.text;
         if (t.created_at) obj.created_at = t.created_at;
         obj.url = tweetUrl(t.id);
@@ -82,6 +87,9 @@ export function formatTweetList(
       ];
       if (t.author_id) {
         lines.push(`author_id: ${t.author_id}`);
+      }
+      if (t.author_username) {
+        lines.push(`author_username: ${t.author_username}`);
       }
       lines.push(`text: ${t.text}`);
       if (t.created_at) {

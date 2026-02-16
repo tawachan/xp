@@ -49,13 +49,31 @@ export interface TweetData {
   text: string;
   created_at?: string;
   author_id?: string;
+  author_username?: string;
+}
+
+function applyAuthorUsernames(tweets: TweetData[], includes?: { users?: Array<{ id: string; username: string }> }): void {
+  if (!includes?.users) return;
+  const userMap = new Map<string, string>();
+  for (const user of includes.users) {
+    userMap.set(user.id, user.username);
+  }
+  for (const tweet of tweets) {
+    if (tweet.author_id && userMap.has(tweet.author_id)) {
+      tweet.author_username = userMap.get(tweet.author_id);
+    }
+  }
 }
 
 export async function getTweet(tweetId: string): Promise<TweetData> {
   validateTweetId(tweetId);
   const config = await loadConfig();
   const url = `${BASE_URL}/tweets/${tweetId}`;
-  const params = { "tweet.fields": "created_at,author_id" };
+  const params: Record<string, string> = {
+    "tweet.fields": "created_at,author_id",
+    "expansions": "author_id",
+    "user.fields": "username",
+  };
 
   const authHeader = await buildAuthHeader("GET", url, config, params);
 
@@ -70,7 +88,9 @@ export async function getTweet(tweetId: string): Promise<TweetData> {
   if (!json.data) {
     throw new Error(`Tweet not found: ${tweetId}`);
   }
-  return json.data;
+  const tweet: TweetData = json.data;
+  applyAuthorUsernames([tweet], json.includes);
+  return tweet;
 }
 
 export interface GetMyTweetsOptions {
@@ -95,16 +115,12 @@ export async function getMyUserId(): Promise<string> {
   return meJson.data.id;
 }
 
-export async function getMyTweets(options: GetMyTweetsOptions = {}): Promise<TweetData[]> {
-  const { maxResults = 10, beforeId, afterId } = options;
-  if (beforeId) validateTweetId(beforeId);
-  if (afterId) validateTweetId(afterId);
-
-  const userId = await getMyUserId();
+async function paginatedTweetFetch(
+  url: string,
+  options: GetMyTweetsOptions & { maxResults: number },
+): Promise<TweetData[]> {
+  const { maxResults, beforeId, afterId } = options;
   const config = await loadConfig();
-
-  // Get their tweets, paginating if the API returns fewer than requested
-  const tweetsUrl = `${BASE_URL}/users/${userId}/tweets`;
   const allTweets: TweetData[] = [];
   let remaining = maxResults;
   let paginationToken: string | undefined;
@@ -115,30 +131,49 @@ export async function getMyTweets(options: GetMyTweetsOptions = {}): Promise<Twe
     const params: Record<string, string> = {
       "max_results": perPage.toString(),
       "tweet.fields": "created_at,author_id",
+      "expansions": "author_id",
+      "user.fields": "username",
     };
     if (beforeId) params["until_id"] = beforeId;
     if (afterId) params["since_id"] = afterId;
     if (paginationToken) params["pagination_token"] = paginationToken;
 
-    const tweetsAuthHeader = await buildAuthHeader("GET", tweetsUrl, config, params);
+    const authHeader = await buildAuthHeader("GET", url, config, params);
     const queryString = new URLSearchParams(params).toString();
-    const tweetsRes = await fetch(`${tweetsUrl}?${queryString}`, {
+    const res = await fetch(`${url}?${queryString}`, {
       method: "GET",
-      headers: { Authorization: tweetsAuthHeader },
+      headers: { Authorization: authHeader },
     });
 
-    await handleApiError(tweetsRes, "read");
-    const tweetsJson = await tweetsRes.json();
-    const tweets: TweetData[] = tweetsJson.data ?? [];
+    await handleApiError(res, "read");
+    const json = await res.json();
+    const tweets: TweetData[] = json.data ?? [];
+    applyAuthorUsernames(tweets, json.includes);
     allTweets.push(...tweets);
     remaining -= tweets.length;
 
-    const nextToken = tweetsJson.meta?.next_token;
+    const nextToken = json.meta?.next_token;
     if (!nextToken || tweets.length === 0) break;
     paginationToken = nextToken;
   }
 
   return allTweets.slice(0, maxResults);
+}
+
+export async function getMyTweets(options: GetMyTweetsOptions = {}): Promise<TweetData[]> {
+  const { maxResults = 10, beforeId, afterId } = options;
+  if (beforeId) validateTweetId(beforeId);
+  if (afterId) validateTweetId(afterId);
+  const userId = await getMyUserId();
+  return paginatedTweetFetch(`${BASE_URL}/users/${userId}/tweets`, { maxResults, beforeId, afterId });
+}
+
+export async function getMyMentions(options: GetMyTweetsOptions = {}): Promise<TweetData[]> {
+  const { maxResults = 10, beforeId, afterId } = options;
+  if (beforeId) validateTweetId(beforeId);
+  if (afterId) validateTweetId(afterId);
+  const userId = await getMyUserId();
+  return paginatedTweetFetch(`${BASE_URL}/users/${userId}/mentions`, { maxResults, beforeId, afterId });
 }
 
 export async function deleteTweet(tweetId: string): Promise<void> {

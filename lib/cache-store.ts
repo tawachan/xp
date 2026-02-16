@@ -76,7 +76,11 @@ export async function getCachedTweet(id: string): Promise<TweetData | null> {
 export async function listCachedTweets(): Promise<TweetData[]> {
   const data = await loadCache();
   return Object.values(data)
-    .sort((a, b) => (b.cached_at > a.cached_at ? 1 : -1))
+    .sort((a, b) => {
+      const aKey = a.created_at ?? a.cached_at;
+      const bKey = b.created_at ?? b.cached_at;
+      return bKey > aKey ? 1 : -1;
+    })
     .map(toTweetData);
 }
 

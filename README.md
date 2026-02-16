@@ -176,9 +176,12 @@ xp delete 1234567890123456789
 `xp get` and `xp me` automatically cache fetched tweets locally. Posting (`xp tweet` / `thread` / `reply`) also caches. This reduces paid API calls for previously fetched tweets.
 
 ```bash
-xp cache list              # List all cached tweets
-xp cache show <tweet_id>   # Show a specific cached tweet
-xp cache clear             # Delete all cached tweets
+xp cache list                              # List all cached tweets (newest first)
+xp cache list --limit 20                   # Show first 20 cached tweets
+xp cache list --year 2026                  # Filter by year
+xp cache list --year 2026 --month 1        # Filter by year and month
+xp cache show <tweet_id>                   # Show a specific cached tweet
+xp cache clear                             # Delete all cached tweets
 ```
 
 Cache is stored at `~/.config/xp/cache/tweets.json` by default. You can change the cache directory to store tweets alongside your project — useful for versioning cached tweets in a Git repository, sharing them across a team, or keeping project-specific tweet archives:

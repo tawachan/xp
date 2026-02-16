@@ -70,6 +70,7 @@ xp get 1234567890123456789
 Output:
 ```text
 tweet_id: 1234567890123456789
+author_id: 9876543210
 text: Hello world
 created_at: 2024-01-15T10:30:00.000Z
 url: https://x.com/i/status/1234567890123456789
@@ -89,6 +90,7 @@ Output:
 ```text
 [1/10]
 tweet_id: 1234567890123456789
+author_id: 9876543210
 text: Hello world
 created_at: 2024-01-15T10:30:00.000Z
 url: https://x.com/i/status/1234567890123456789
@@ -110,9 +112,13 @@ Output: `deleted: 1234567890123456789`
 `xp get` caches tweets automatically. `xp me` also saves all fetched tweets to cache.
 
 ```bash
-xp cache list              # List all cached tweets
-xp cache show <tweet_id>   # Show a specific cached tweet
-xp cache clear             # Delete all cached tweets
+xp cache list                              # List all cached tweets (sorted by created_at, newest first)
+xp cache list --limit 20                   # Show first 20 cached tweets
+xp cache list --year 2026                  # Filter by year
+xp cache list --year 2026 --month 1        # Filter by year and month
+xp cache list --year 2026 --limit 10       # Combine filters
+xp cache show <tweet_id>                   # Show a specific cached tweet
+xp cache clear                             # Delete all cached tweets
 ```
 
 Output format is identical to `me` and `get` respectively. Supports `--json`.
@@ -157,6 +163,7 @@ Common errors:
 - `Unsupported image format` → must be JPG, PNG, GIF, or WebP
 - `Too many images` → max 4 images per tweet
 - `--cache-dir must be an absolute path` → relative paths are not allowed
+- `--month requires --year` → `--month` cannot be used without `--year`
 
 ### JSON output
 
@@ -175,7 +182,7 @@ xp me --json
 ```
 
 ```json
-[{"tweet_id":"123","text":"Hello","created_at":"2024-01-15T10:30:00.000Z","url":"https://x.com/i/status/123"}]
+[{"tweet_id":"123","author_id":"456","text":"Hello","created_at":"2024-01-15T10:30:00.000Z","url":"https://x.com/i/status/123"}]
 ```
 
 Errors with `--json` also output JSON to stderr:

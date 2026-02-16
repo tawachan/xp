@@ -1,4 +1,4 @@
-import { postTweet } from "../lib/x-client.ts";
+import { postTweet, getMyUserId } from "../lib/x-client.ts";
 import { cacheTweet } from "../lib/cache-store.ts";
 import { formatThreadResult } from "../lib/output.ts";
 import { uploadAllMedia } from "../lib/media-upload.ts";
@@ -16,6 +16,13 @@ export async function threadCommand(texts: string[], json = false, imagePaths?: 
   // Upload images for the first tweet only
   const mediaIds = imagePaths?.length ? await uploadAllMedia(imagePaths) : undefined;
 
+  let authorId: string | undefined;
+  try {
+    authorId = await getMyUserId();
+  } catch {
+    // best-effort: skip author_id if lookup fails
+  }
+
   const results: Array<{ id: string }> = [];
   let previousId: string | undefined;
   const now = new Date().toISOString();
@@ -23,7 +30,7 @@ export async function threadCommand(texts: string[], json = false, imagePaths?: 
   for (let i = 0; i < texts.length; i++) {
     const result = await postTweet(texts[i]!, previousId, i === 0 ? mediaIds : undefined);
     results.push(result);
-    await cacheTweet({ id: result.id, text: texts[i]!, created_at: now });
+    await cacheTweet({ id: result.id, text: texts[i]!, created_at: now, author_id: authorId });
     previousId = result.id;
   }
 

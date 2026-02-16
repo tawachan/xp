@@ -26,7 +26,7 @@ Usage:
   xp me --before <tweet_id>          Fetch tweets older than the given ID
   xp me --after <tweet_id>           Fetch tweets newer than the given ID
   xp delete <tweet_id>               Delete a tweet
-  xp cache list                      List cached tweets
+  xp cache list [flags]              List cached tweets
   xp cache show <tweet_id>           Show a cached tweet
   xp cache clear                     Clear all cached tweets
   xp auth login                      Authenticate via browser (OAuth PIN flow)
@@ -42,6 +42,11 @@ Usage:
 Flags:
   --json                             Output in JSON format
   --image <path>                     Attach image (max 4, JPG/PNG/GIF/WebP, 5MB each)
+
+Cache list flags:
+  --limit N                          Show first N cached tweets
+  --year YYYY                        Filter by year (e.g. 2026)
+  --month M                          Filter by month (1-12, requires --year)
 
 Config flags (for config set):
   --api-key=VALUE
@@ -189,7 +194,25 @@ async function main(): Promise<void> {
       } else if (args[1] === "clear") {
         await cacheClearCommand();
       } else {
-        await cacheListCommand(jsonFlag);
+        const cacheArgs = args.slice(args[1] === "list" ? 2 : 1);
+        let cacheLimit: string | undefined;
+        let cacheYear: string | undefined;
+        let cacheMonth: string | undefined;
+        for (let i = 0; i < cacheArgs.length; i++) {
+          if (cacheArgs[i] === "--limit") {
+            cacheLimit = cacheArgs[++i];
+            if (!cacheLimit) throw new Error("Number is required: xp cache list --limit <N>");
+          } else if (cacheArgs[i] === "--year") {
+            cacheYear = cacheArgs[++i];
+            if (!cacheYear) throw new Error("Year is required: xp cache list --year <YYYY>");
+          } else if (cacheArgs[i] === "--month") {
+            cacheMonth = cacheArgs[++i];
+            if (!cacheMonth) throw new Error("Month is required: xp cache list --month <M>");
+          } else {
+            throw new Error(`Unknown argument: ${cacheArgs[i]}\nUsage: xp cache list [--limit N] [--year YYYY] [--month M]`);
+          }
+        }
+        await cacheListCommand({ limit: cacheLimit, year: cacheYear, month: cacheMonth, json: jsonFlag });
       }
       break;
 

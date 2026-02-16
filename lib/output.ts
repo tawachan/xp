@@ -30,19 +30,24 @@ export function formatThreadResult(results: Array<{ id: string }>, json = false)
 }
 
 export function formatTweetData(
-  data: { id: string; text: string; created_at?: string },
+  data: { id: string; text: string; created_at?: string; author_id?: string },
   json = false,
 ): string {
   if (json) {
-    const obj: Record<string, string> = { tweet_id: data.id, text: data.text };
+    const obj: Record<string, string> = { tweet_id: data.id };
+    if (data.author_id) obj.author_id = data.author_id;
+    obj.text = data.text;
     if (data.created_at) obj.created_at = data.created_at;
     obj.url = tweetUrl(data.id);
     return JSON.stringify(obj);
   }
   const lines = [
     `tweet_id: ${data.id}`,
-    `text: ${data.text}`,
   ];
+  if (data.author_id) {
+    lines.push(`author_id: ${data.author_id}`);
+  }
+  lines.push(`text: ${data.text}`);
   if (data.created_at) {
     lines.push(`created_at: ${data.created_at}`);
   }
@@ -51,13 +56,15 @@ export function formatTweetData(
 }
 
 export function formatTweetList(
-  tweets: Array<{ id: string; text: string; created_at?: string }>,
+  tweets: Array<{ id: string; text: string; created_at?: string; author_id?: string }>,
   json = false,
 ): string {
   if (json) {
     return JSON.stringify(
       tweets.map((t) => {
-        const obj: Record<string, string> = { tweet_id: t.id, text: t.text };
+        const obj: Record<string, string> = { tweet_id: t.id };
+        if (t.author_id) obj.author_id = t.author_id;
+        obj.text = t.text;
         if (t.created_at) obj.created_at = t.created_at;
         obj.url = tweetUrl(t.id);
         return obj;
@@ -72,8 +79,11 @@ export function formatTweetList(
       const lines = [
         `[${i + 1}/${tweets.length}]`,
         `tweet_id: ${t.id}`,
-        `text: ${t.text}`,
       ];
+      if (t.author_id) {
+        lines.push(`author_id: ${t.author_id}`);
+      }
+      lines.push(`text: ${t.text}`);
       if (t.created_at) {
         lines.push(`created_at: ${t.created_at}`);
       }

@@ -30,6 +30,11 @@ complete -c xp -n '__fish_seen_subcommand_from cache' -a list -d 'List cached tw
 complete -c xp -n '__fish_seen_subcommand_from cache' -a show -d 'Show a cached tweet'
 complete -c xp -n '__fish_seen_subcommand_from cache' -a clear -d 'Clear all cached tweets'
 
+# cache list flags
+complete -c xp -n '__fish_seen_subcommand_from cache; and __fish_seen_subcommand_from list' -l limit -d 'Number of cached tweets to show'
+complete -c xp -n '__fish_seen_subcommand_from cache; and __fish_seen_subcommand_from list' -l year -d 'Filter by year (e.g. 2026)'
+complete -c xp -n '__fish_seen_subcommand_from cache; and __fish_seen_subcommand_from list' -l month -d 'Filter by month (1-12, requires --year)'
+
 # config subcommands
 complete -c xp -n '__fish_seen_subcommand_from config' -a set -d 'Set API credentials'
 complete -c xp -n '__fish_seen_subcommand_from config' -a unset -d 'Unset config values'
@@ -73,6 +78,9 @@ _xp() {
             ;;
         cache)
             COMPREPLY=( $(compgen -W "list show clear" -- "\${cur}") )
+            ;;
+        list)
+            COMPREPLY=( $(compgen -W "--limit --year --month --json" -- "\${cur}") )
             ;;
         config)
             COMPREPLY=( $(compgen -W "set unset show" -- "\${cur}") )
@@ -140,7 +148,14 @@ _xp() {
                     _arguments '--limit[Number of tweets to fetch]:count:' '--before[Fetch tweets older than this ID]:tweet_id:' '--after[Fetch tweets newer than this ID]:tweet_id:' '--json[Output in JSON format]'
                     ;;
                 cache)
-                    _values 'subcommand' 'list[List cached tweets]' 'show[Show a cached tweet]' 'clear[Clear all cached tweets]'
+                    case "\${words[2]}" in
+                        list)
+                            _arguments '--limit[Number of cached tweets to show]:count:' '--year[Filter by year]:year:' '--month[Filter by month (1-12)]:month:' '--json[Output in JSON format]'
+                            ;;
+                        *)
+                            _values 'subcommand' 'list[List cached tweets]' 'show[Show a cached tweet]' 'clear[Clear all cached tweets]'
+                            ;;
+                    esac
                     ;;
                 config)
                     _values 'subcommand' 'set[Set API credentials]' 'unset[Unset config values]' 'show[Show current config]'

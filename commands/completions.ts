@@ -31,9 +31,9 @@ complete -c xp -n '__fish_seen_subcommand_from cache' -a show -d 'Show a cached 
 complete -c xp -n '__fish_seen_subcommand_from cache' -a clear -d 'Clear all cached tweets'
 
 # cache list flags
-complete -c xp -n '__fish_seen_subcommand_from list' -l limit -d 'Number of cached tweets to show'
-complete -c xp -n '__fish_seen_subcommand_from list' -l year -d 'Filter by year (e.g. 2026)'
-complete -c xp -n '__fish_seen_subcommand_from list' -l month -d 'Filter by month (1-12, requires --year)'
+complete -c xp -n '__fish_seen_subcommand_from cache; and __fish_seen_subcommand_from list' -l limit -d 'Number of cached tweets to show'
+complete -c xp -n '__fish_seen_subcommand_from cache; and __fish_seen_subcommand_from list' -l year -d 'Filter by year (e.g. 2026)'
+complete -c xp -n '__fish_seen_subcommand_from cache; and __fish_seen_subcommand_from list' -l month -d 'Filter by month (1-12, requires --year)'
 
 # config subcommands
 complete -c xp -n '__fish_seen_subcommand_from config' -a set -d 'Set API credentials'

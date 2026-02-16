@@ -24,7 +24,7 @@ export async function cacheListCommand(options: CacheListOptions = {}): Promise<
 
   if (year !== undefined) {
     const y = Number(year);
-    if (!Number.isInteger(y) || year.length !== 4) {
+    if (!Number.isInteger(y) || y < 1000 || y > 9999) {
       throw new Error(`Invalid year: "${year}" (must be a 4-digit year)`);
     }
   }

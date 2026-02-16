@@ -52,11 +52,28 @@ export interface TweetData {
   author_username?: string;
 }
 
+function applyAuthorUsernames(tweets: TweetData[], includes?: { users?: Array<{ id: string; username: string }> }): void {
+  if (!includes?.users) return;
+  const userMap = new Map<string, string>();
+  for (const user of includes.users) {
+    userMap.set(user.id, user.username);
+  }
+  for (const tweet of tweets) {
+    if (tweet.author_id && userMap.has(tweet.author_id)) {
+      tweet.author_username = userMap.get(tweet.author_id);
+    }
+  }
+}
+
 export async function getTweet(tweetId: string): Promise<TweetData> {
   validateTweetId(tweetId);
   const config = await loadConfig();
   const url = `${BASE_URL}/tweets/${tweetId}`;
-  const params = { "tweet.fields": "created_at,author_id" };
+  const params: Record<string, string> = {
+    "tweet.fields": "created_at,author_id",
+    "expansions": "author_id",
+    "user.fields": "username",
+  };
 
   const authHeader = await buildAuthHeader("GET", url, config, params);
 
@@ -71,7 +88,9 @@ export async function getTweet(tweetId: string): Promise<TweetData> {
   if (!json.data) {
     throw new Error(`Tweet not found: ${tweetId}`);
   }
-  return json.data;
+  const tweet: TweetData = json.data;
+  applyAuthorUsernames([tweet], json.includes);
+  return tweet;
 }
 
 export interface GetMyTweetsOptions {
@@ -116,6 +135,8 @@ export async function getMyTweets(options: GetMyTweetsOptions = {}): Promise<Twe
     const params: Record<string, string> = {
       "max_results": perPage.toString(),
       "tweet.fields": "created_at,author_id",
+      "expansions": "author_id",
+      "user.fields": "username",
     };
     if (beforeId) params["until_id"] = beforeId;
     if (afterId) params["since_id"] = afterId;
@@ -131,6 +152,7 @@ export async function getMyTweets(options: GetMyTweetsOptions = {}): Promise<Twe
     await handleApiError(tweetsRes, "read");
     const tweetsJson = await tweetsRes.json();
     const tweets: TweetData[] = tweetsJson.data ?? [];
+    applyAuthorUsernames(tweets, tweetsJson.includes);
     allTweets.push(...tweets);
     remaining -= tweets.length;
 
@@ -177,19 +199,7 @@ export async function getMyMentions(options: GetMyTweetsOptions = {}): Promise<T
     await handleApiError(res, "read");
     const json = await res.json();
     const tweets: TweetData[] = json.data ?? [];
-
-    // Build author_id -> username map from includes.users
-    const userMap = new Map<string, string>();
-    if (json.includes?.users) {
-      for (const user of json.includes.users) {
-        userMap.set(user.id, user.username);
-      }
-    }
-    for (const tweet of tweets) {
-      if (tweet.author_id && userMap.has(tweet.author_id)) {
-        tweet.author_username = userMap.get(tweet.author_id);
-      }
-    }
+    applyAuthorUsernames(tweets, json.includes);
 
     allTweets.push(...tweets);
     remaining -= tweets.length;

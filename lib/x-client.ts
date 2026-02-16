@@ -49,6 +49,7 @@ export interface TweetData {
   text: string;
   created_at?: string;
   author_id?: string;
+  author_username?: string;
 }
 
 export async function getTweet(tweetId: string): Promise<TweetData> {
@@ -134,6 +135,66 @@ export async function getMyTweets(options: GetMyTweetsOptions = {}): Promise<Twe
     remaining -= tweets.length;
 
     const nextToken = tweetsJson.meta?.next_token;
+    if (!nextToken || tweets.length === 0) break;
+    paginationToken = nextToken;
+  }
+
+  return allTweets.slice(0, maxResults);
+}
+
+export async function getMyMentions(options: GetMyTweetsOptions = {}): Promise<TweetData[]> {
+  const { maxResults = 10, beforeId, afterId } = options;
+  if (beforeId) validateTweetId(beforeId);
+  if (afterId) validateTweetId(afterId);
+
+  const userId = await getMyUserId();
+  const config = await loadConfig();
+
+  const mentionsUrl = `${BASE_URL}/users/${userId}/mentions`;
+  const allTweets: TweetData[] = [];
+  let remaining = maxResults;
+  let paginationToken: string | undefined;
+
+  while (remaining > 0) {
+    const perPage = Math.max(Math.min(remaining, 100), 5);
+    const params: Record<string, string> = {
+      "max_results": perPage.toString(),
+      "tweet.fields": "created_at,author_id",
+      "expansions": "author_id",
+      "user.fields": "username",
+    };
+    if (beforeId) params["until_id"] = beforeId;
+    if (afterId) params["since_id"] = afterId;
+    if (paginationToken) params["pagination_token"] = paginationToken;
+
+    const authHeader = await buildAuthHeader("GET", mentionsUrl, config, params);
+    const queryString = new URLSearchParams(params).toString();
+    const res = await fetch(`${mentionsUrl}?${queryString}`, {
+      method: "GET",
+      headers: { Authorization: authHeader },
+    });
+
+    await handleApiError(res, "read");
+    const json = await res.json();
+    const tweets: TweetData[] = json.data ?? [];
+
+    // Build author_id -> username map from includes.users
+    const userMap = new Map<string, string>();
+    if (json.includes?.users) {
+      for (const user of json.includes.users) {
+        userMap.set(user.id, user.username);
+      }
+    }
+    for (const tweet of tweets) {
+      if (tweet.author_id && userMap.has(tweet.author_id)) {
+        tweet.author_username = userMap.get(tweet.author_id);
+      }
+    }
+
+    allTweets.push(...tweets);
+    remaining -= tweets.length;
+
+    const nextToken = json.meta?.next_token;
     if (!nextToken || tweets.length === 0) break;
     paginationToken = nextToken;
   }

@@ -7,6 +7,7 @@ complete -c xp -n '__fish_use_subcommand' -a thread -d 'Post a thread'
 complete -c xp -n '__fish_use_subcommand' -a reply -d 'Reply to a tweet'
 complete -c xp -n '__fish_use_subcommand' -a get -d 'Fetch a tweet by ID'
 complete -c xp -n '__fish_use_subcommand' -a me -d 'List your recent tweets'
+complete -c xp -n '__fish_use_subcommand' -a mentions -d 'List your mentions'
 complete -c xp -n '__fish_use_subcommand' -a delete -d 'Delete a tweet'
 complete -c xp -n '__fish_use_subcommand' -a cache -d 'Manage tweet cache'
 complete -c xp -n '__fish_use_subcommand' -a auth -d 'Authentication'
@@ -24,6 +25,11 @@ complete -c xp -n '__fish_seen_subcommand_from auth' -a logout -d 'Remove saved 
 complete -c xp -n '__fish_seen_subcommand_from me' -l limit -d 'Number of tweets to fetch'
 complete -c xp -n '__fish_seen_subcommand_from me' -l before -d 'Fetch tweets older than this ID'
 complete -c xp -n '__fish_seen_subcommand_from me' -l after -d 'Fetch tweets newer than this ID'
+
+# mentions flags
+complete -c xp -n '__fish_seen_subcommand_from mentions' -l limit -d 'Number of mentions to fetch'
+complete -c xp -n '__fish_seen_subcommand_from mentions' -l before -d 'Fetch mentions older than this ID'
+complete -c xp -n '__fish_seen_subcommand_from mentions' -l after -d 'Fetch mentions newer than this ID'
 
 # cache subcommands
 complete -c xp -n '__fish_seen_subcommand_from cache' -a list -d 'List cached tweets'
@@ -64,7 +70,7 @@ _xp() {
     COMPREPLY=()
     cur="\${COMP_WORDS[COMP_CWORD]}"
     prev="\${COMP_WORDS[COMP_CWORD-1]}"
-    commands="tweet thread reply get me delete cache auth config upgrade completions help version"
+    commands="tweet thread reply get me mentions delete cache auth config upgrade completions help version"
 
     case "\${prev}" in
         xp)
@@ -74,6 +80,9 @@ _xp() {
             COMPREPLY=( $(compgen -W "login logout" -- "\${cur}") )
             ;;
         me)
+            COMPREPLY=( $(compgen -W "--limit --before --after --json" -- "\${cur}") )
+            ;;
+        mentions)
             COMPREPLY=( $(compgen -W "--limit --before --after --json" -- "\${cur}") )
             ;;
         cache)
@@ -119,6 +128,7 @@ _xp() {
         'reply:Reply to a tweet'
         'get:Fetch a tweet by ID'
         'me:List your recent tweets'
+        'mentions:List your mentions'
         'delete:Delete a tweet'
         'cache:Manage tweet cache'
         'auth:Authentication'
@@ -146,6 +156,9 @@ _xp() {
                     ;;
                 me)
                     _arguments '--limit[Number of tweets to fetch]:count:' '--before[Fetch tweets older than this ID]:tweet_id:' '--after[Fetch tweets newer than this ID]:tweet_id:' '--json[Output in JSON format]'
+                    ;;
+                mentions)
+                    _arguments '--limit[Number of mentions to fetch]:count:' '--before[Fetch mentions older than this ID]:tweet_id:' '--after[Fetch mentions newer than this ID]:tweet_id:' '--json[Output in JSON format]'
                     ;;
                 cache)
                     case "\${words[2]}" in

@@ -3,6 +3,7 @@ import { threadCommand } from "./commands/thread.ts";
 import { deleteCommand } from "./commands/delete.ts";
 import { getCommand } from "./commands/get.ts";
 import { meCommand } from "./commands/me.ts";
+import { mentionsCommand } from "./commands/mentions.ts";
 import { replyCommand } from "./commands/reply.ts";
 import { configSetCommand, configShowCommand, configUnsetCommand } from "./commands/config.ts";
 import { authLoginCommand, authLogoutCommand } from "./commands/auth.ts";
@@ -25,6 +26,9 @@ Usage:
   xp me [--limit N]                   List your recent tweets (default: 10)
   xp me --before <tweet_id>          Fetch tweets older than the given ID
   xp me --after <tweet_id>           Fetch tweets newer than the given ID
+  xp mentions [--limit N]             List your mentions (default: 10)
+  xp mentions --before <tweet_id>    Fetch mentions older than the given ID
+  xp mentions --after <tweet_id>     Fetch mentions newer than the given ID
   xp delete <tweet_id>               Delete a tweet
   xp cache list [flags]              List cached tweets
   xp cache show <tweet_id>           Show a cached tweet
@@ -59,7 +63,7 @@ Setup:
   xp auth login
 
 Note:
-  The "get" and "me" commands require a paid plan (Pay-Per-Use or Basic).
+  The "get", "me", and "mentions" commands require a paid plan (Pay-Per-Use or Basic).
   See: https://developer.x.com/en/portal/products
 
 Examples:
@@ -72,6 +76,8 @@ Examples:
   xp me --before 1234567890123456789
   xp me --limit 20 --before 1234567890123456789
   xp me --json
+  xp mentions --limit 20
+  xp mentions --json
   xp delete 1234567890123456789
   xp "Hello" --image photo.jpg
   xp tweet "Hello" --image a.jpg --image b.jpg
@@ -107,7 +113,7 @@ async function main(): Promise<void> {
   // --image is only supported for tweet, thread, reply, and default (shorthand tweet)
   const NON_IMAGE_COMMANDS = new Set([
     "help", "--help", "-h", "version", "--version", "-v",
-    "get", "me", "delete", "cache", "auth", "config", "upgrade", "completions",
+    "get", "me", "mentions", "delete", "cache", "auth", "config", "upgrade", "completions",
   ]);
   if (imagePaths.length > 0 && NON_IMAGE_COMMANDS.has(command)) {
     throw new Error(`--image is not supported for the "${command}" command`);
@@ -177,6 +183,28 @@ async function main(): Promise<void> {
       break;
     }
 
+    case "mentions": {
+      const mentionsArgs = args.slice(1);
+      let beforeId: string | undefined;
+      let afterId: string | undefined;
+      let limit: string | undefined;
+      for (let i = 0; i < mentionsArgs.length; i++) {
+        if (mentionsArgs[i] === "--before") {
+          beforeId = mentionsArgs[++i];
+          if (!beforeId) throw new Error("Tweet ID is required: xp mentions --before <tweet_id>");
+        } else if (mentionsArgs[i] === "--after") {
+          afterId = mentionsArgs[++i];
+          if (!afterId) throw new Error("Tweet ID is required: xp mentions --after <tweet_id>");
+        } else if (mentionsArgs[i] === "--limit") {
+          limit = mentionsArgs[++i];
+          if (!limit) throw new Error("Number is required: xp mentions --limit <N>");
+        } else {
+          throw new Error(`Unknown argument: ${mentionsArgs[i]}\nUsage: xp mentions [--limit N] [--before <id>] [--after <id>]`);
+        }
+      }
+      await mentionsCommand({ limit, beforeId, afterId, json: jsonFlag });
+      break;
+    }
 
     case "delete":
       if (!args[1]) {

@@ -70,6 +70,7 @@ xp get 1234567890123456789
 Output:
 ```text
 tweet_id: 1234567890123456789
+author_id: 9876543210
 text: Hello world
 created_at: 2024-01-15T10:30:00.000Z
 url: https://x.com/i/status/1234567890123456789
@@ -89,6 +90,7 @@ Output:
 ```text
 [1/10]
 tweet_id: 1234567890123456789
+author_id: 9876543210
 text: Hello world
 created_at: 2024-01-15T10:30:00.000Z
 url: https://x.com/i/status/1234567890123456789
@@ -180,7 +182,7 @@ xp me --json
 ```
 
 ```json
-[{"tweet_id":"123","text":"Hello","created_at":"2024-01-15T10:30:00.000Z","url":"https://x.com/i/status/123"}]
+[{"tweet_id":"123","author_id":"456","text":"Hello","created_at":"2024-01-15T10:30:00.000Z","url":"https://x.com/i/status/123"}]
 ```
 
 Errors with `--json` also output JSON to stderr:

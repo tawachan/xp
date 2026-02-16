@@ -1,4 +1,4 @@
-import { postTweet } from "../lib/x-client.ts";
+import { postTweet, getMyUserId } from "../lib/x-client.ts";
 import { cacheTweet } from "../lib/cache-store.ts";
 import { formatTweetResult } from "../lib/output.ts";
 import { uploadAllMedia } from "../lib/media-upload.ts";
@@ -12,6 +12,12 @@ export async function tweetCommand(text: string, json = false, imagePaths?: stri
   }
   const mediaIds = imagePaths?.length ? await uploadAllMedia(imagePaths) : undefined;
   const result = await postTweet(text, undefined, mediaIds);
-  await cacheTweet({ id: result.id, text, created_at: new Date().toISOString() });
+  let authorId: string | undefined;
+  try {
+    authorId = await getMyUserId();
+  } catch {
+    // best-effort: skip author_id if lookup fails
+  }
+  await cacheTweet({ id: result.id, text, created_at: new Date().toISOString(), author_id: authorId });
   console.log(formatTweetResult(result, json));
 }

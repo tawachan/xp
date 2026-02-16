@@ -79,14 +79,8 @@ export interface GetMyTweetsOptions {
   afterId?: string;
 }
 
-export async function getMyTweets(options: GetMyTweetsOptions = {}): Promise<TweetData[]> {
-  const { maxResults = 10, beforeId, afterId } = options;
-  if (beforeId) validateTweetId(beforeId);
-  if (afterId) validateTweetId(afterId);
-
+export async function getMyUserId(): Promise<string> {
   const config = await loadConfig();
-
-  // First get authenticated user ID
   const meUrl = `${BASE_URL}/users/me`;
   const meAuthHeader = await buildAuthHeader("GET", meUrl, config);
   const meRes = await fetch(meUrl, {
@@ -98,9 +92,18 @@ export async function getMyTweets(options: GetMyTweetsOptions = {}): Promise<Twe
   if (!meJson.data) {
     throw new Error("Failed to retrieve authenticated user");
   }
-  const userId = meJson.data.id;
+  return meJson.data.id;
+}
 
-  // Then get their tweets, paginating if the API returns fewer than requested
+export async function getMyTweets(options: GetMyTweetsOptions = {}): Promise<TweetData[]> {
+  const { maxResults = 10, beforeId, afterId } = options;
+  if (beforeId) validateTweetId(beforeId);
+  if (afterId) validateTweetId(afterId);
+
+  const userId = await getMyUserId();
+  const config = await loadConfig();
+
+  // Get their tweets, paginating if the API returns fewer than requested
   const tweetsUrl = `${BASE_URL}/users/${userId}/tweets`;
   const allTweets: TweetData[] = [];
   let remaining = maxResults;
@@ -111,7 +114,7 @@ export async function getMyTweets(options: GetMyTweetsOptions = {}): Promise<Twe
     const perPage = Math.max(Math.min(remaining, 100), 5);
     const params: Record<string, string> = {
       "max_results": perPage.toString(),
-      "tweet.fields": "created_at",
+      "tweet.fields": "created_at,author_id",
     };
     if (beforeId) params["until_id"] = beforeId;
     if (afterId) params["since_id"] = afterId;

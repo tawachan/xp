@@ -80,8 +80,8 @@ url: https://x.com/i/status/1234567890123456789
 ### List your recent tweets (requires paid plan)
 
 ```bash
-xp me                                      # default: 10 tweets
-xp me --limit 20                           # up to 100
+xp me                                      # default: 100 tweets (API max per request)
+xp me --limit 20                           # 5-100
 xp me --before 1234567890123456789         # tweets older than this ID
 xp me --after 1234567890123456789          # tweets newer than this ID
 xp me --limit 20 --before 1234567890123456789  # combine limit with cursor
@@ -104,8 +104,8 @@ url: https://x.com/i/status/1234567890123456789
 ### List your mentions (requires paid plan)
 
 ```bash
-xp mentions                                    # default: 10 mentions
-xp mentions --limit 20                         # up to 100
+xp mentions                                    # default: 100 mentions (API max per request)
+xp mentions --limit 20                         # 5-100
 xp mentions --before 1234567890123456789       # mentions older than this ID
 xp mentions --after 1234567890123456789        # mentions newer than this ID
 xp mentions --limit 20 --before 1234567890123456789  # combine limit with cursor

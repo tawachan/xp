@@ -11,9 +11,10 @@ export interface MeOptions {
 
 export async function meCommand(options: MeOptions = {}): Promise<void> {
   const { limit, beforeId, afterId, json = false } = options;
-  const maxResults = limit ? parseInt(limit) : 10;
+  // Default to API max (100) to minimize paid API calls — pricing is per-request, not per-tweet
+  const maxResults = limit ? Number(limit) : 100;
   if (isNaN(maxResults) || maxResults < 5 || maxResults > 100) {
-    throw new Error("Limit must be between 5 and 100 (default: 10)");
+    throw new Error("Limit must be between 5 and 100 (default: 100)");
   }
   const tweets = await getMyTweets({ maxResults, beforeId, afterId });
   await cacheTweets(tweets);

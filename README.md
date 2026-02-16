@@ -156,8 +156,8 @@ xp get 1234567890123456789
 ### List your recent tweets
 
 ```bash
-xp me                                      # default: 10 tweets
-xp me --limit 20                           # up to 100
+xp me                                      # default: 100 tweets (API max per request)
+xp me --limit 20                           # 5-100
 xp me --before 1234567890123456789         # older tweets (cursor-based)
 xp me --after 1234567890123456789          # newer tweets
 xp me --limit 20 --before 1234567890123456789
@@ -168,8 +168,8 @@ xp me --limit 20 --before 1234567890123456789
 ### List your mentions
 
 ```bash
-xp mentions                                    # default: 10 mentions
-xp mentions --limit 20                         # up to 100
+xp mentions                                    # default: 100 mentions (API max per request)
+xp mentions --limit 20                         # 5-100
 xp mentions --before 1234567890123456789       # older mentions (cursor-based)
 xp mentions --after 1234567890123456789        # newer mentions
 xp mentions --limit 20 --before 1234567890123456789

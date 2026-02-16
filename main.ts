@@ -23,10 +23,10 @@ Usage:
   xp thread <text1> <text2> ...      Post a thread
   xp reply <tweet_id> <text>         Reply to a tweet
   xp get <tweet_id>                  Fetch a tweet by ID
-  xp me [--limit N]                   List your recent tweets (default: 10)
+  xp me [--limit N]                   List your recent tweets (default: 100)
   xp me --before <tweet_id>          Fetch tweets older than the given ID
   xp me --after <tweet_id>           Fetch tweets newer than the given ID
-  xp mentions [--limit N]             List your mentions (default: 10)
+  xp mentions [--limit N]             List your mentions (default: 100)
   xp mentions --before <tweet_id>    Fetch mentions older than the given ID
   xp mentions --after <tweet_id>     Fetch mentions newer than the given ID
   xp delete <tweet_id>               Delete a tweet

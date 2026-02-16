@@ -115,16 +115,12 @@ export async function getMyUserId(): Promise<string> {
   return meJson.data.id;
 }
 
-export async function getMyTweets(options: GetMyTweetsOptions = {}): Promise<TweetData[]> {
-  const { maxResults = 10, beforeId, afterId } = options;
-  if (beforeId) validateTweetId(beforeId);
-  if (afterId) validateTweetId(afterId);
-
-  const userId = await getMyUserId();
+async function paginatedTweetFetch(
+  url: string,
+  options: GetMyTweetsOptions & { maxResults: number },
+): Promise<TweetData[]> {
+  const { maxResults, beforeId, afterId } = options;
   const config = await loadConfig();
-
-  // Get their tweets, paginating if the API returns fewer than requested
-  const tweetsUrl = `${BASE_URL}/users/${userId}/tweets`;
   const allTweets: TweetData[] = [];
   let remaining = maxResults;
   let paginationToken: string | undefined;
@@ -142,56 +138,9 @@ export async function getMyTweets(options: GetMyTweetsOptions = {}): Promise<Twe
     if (afterId) params["since_id"] = afterId;
     if (paginationToken) params["pagination_token"] = paginationToken;
 
-    const tweetsAuthHeader = await buildAuthHeader("GET", tweetsUrl, config, params);
+    const authHeader = await buildAuthHeader("GET", url, config, params);
     const queryString = new URLSearchParams(params).toString();
-    const tweetsRes = await fetch(`${tweetsUrl}?${queryString}`, {
-      method: "GET",
-      headers: { Authorization: tweetsAuthHeader },
-    });
-
-    await handleApiError(tweetsRes, "read");
-    const tweetsJson = await tweetsRes.json();
-    const tweets: TweetData[] = tweetsJson.data ?? [];
-    applyAuthorUsernames(tweets, tweetsJson.includes);
-    allTweets.push(...tweets);
-    remaining -= tweets.length;
-
-    const nextToken = tweetsJson.meta?.next_token;
-    if (!nextToken || tweets.length === 0) break;
-    paginationToken = nextToken;
-  }
-
-  return allTweets.slice(0, maxResults);
-}
-
-export async function getMyMentions(options: GetMyTweetsOptions = {}): Promise<TweetData[]> {
-  const { maxResults = 10, beforeId, afterId } = options;
-  if (beforeId) validateTweetId(beforeId);
-  if (afterId) validateTweetId(afterId);
-
-  const userId = await getMyUserId();
-  const config = await loadConfig();
-
-  const mentionsUrl = `${BASE_URL}/users/${userId}/mentions`;
-  const allTweets: TweetData[] = [];
-  let remaining = maxResults;
-  let paginationToken: string | undefined;
-
-  while (remaining > 0) {
-    const perPage = Math.max(Math.min(remaining, 100), 5);
-    const params: Record<string, string> = {
-      "max_results": perPage.toString(),
-      "tweet.fields": "created_at,author_id",
-      "expansions": "author_id",
-      "user.fields": "username",
-    };
-    if (beforeId) params["until_id"] = beforeId;
-    if (afterId) params["since_id"] = afterId;
-    if (paginationToken) params["pagination_token"] = paginationToken;
-
-    const authHeader = await buildAuthHeader("GET", mentionsUrl, config, params);
-    const queryString = new URLSearchParams(params).toString();
-    const res = await fetch(`${mentionsUrl}?${queryString}`, {
+    const res = await fetch(`${url}?${queryString}`, {
       method: "GET",
       headers: { Authorization: authHeader },
     });
@@ -200,7 +149,6 @@ export async function getMyMentions(options: GetMyTweetsOptions = {}): Promise<T
     const json = await res.json();
     const tweets: TweetData[] = json.data ?? [];
     applyAuthorUsernames(tweets, json.includes);
-
     allTweets.push(...tweets);
     remaining -= tweets.length;
 
@@ -210,6 +158,22 @@ export async function getMyMentions(options: GetMyTweetsOptions = {}): Promise<T
   }
 
   return allTweets.slice(0, maxResults);
+}
+
+export async function getMyTweets(options: GetMyTweetsOptions = {}): Promise<TweetData[]> {
+  const { maxResults = 10, beforeId, afterId } = options;
+  if (beforeId) validateTweetId(beforeId);
+  if (afterId) validateTweetId(afterId);
+  const userId = await getMyUserId();
+  return paginatedTweetFetch(`${BASE_URL}/users/${userId}/tweets`, { maxResults, beforeId, afterId });
+}
+
+export async function getMyMentions(options: GetMyTweetsOptions = {}): Promise<TweetData[]> {
+  const { maxResults = 10, beforeId, afterId } = options;
+  if (beforeId) validateTweetId(beforeId);
+  if (afterId) validateTweetId(afterId);
+  const userId = await getMyUserId();
+  return paginatedTweetFetch(`${BASE_URL}/users/${userId}/mentions`, { maxResults, beforeId, afterId });
 }
 
 export async function deleteTweet(tweetId: string): Promise<void> {

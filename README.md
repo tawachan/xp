@@ -175,7 +175,7 @@ xp mentions --after 1234567890123456789        # newer mentions
 xp mentions --limit 20 --before 1234567890123456789
 ```
 
-Output includes `author_username` so you can see who mentioned you.
+All read commands (`get`, `me`, `mentions`) include `author_username` in the output.
 
 > Requires a paid API plan (Pay-Per-Use or Basic).
 
@@ -252,7 +252,7 @@ xp "Hello" --json
 # {"tweet_id":"1234567890123456789","url":"https://x.com/i/status/1234567890123456789"}
 
 xp me --json
-# [{"tweet_id":"123...","text":"Hello","created_at":"...","url":"..."},...]
+# [{"tweet_id":"123...","author_id":"456...","author_username":"tawachan39","text":"Hello","created_at":"...","url":"..."},...]
 
 xp me --json | jq '.[0].text'
 # "Hello"

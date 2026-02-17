@@ -4,6 +4,7 @@ export interface XpConfig {
   accessToken: string;
   accessTokenSecret: string;
   cacheDir?: string;
+  userId?: string;
 }
 
 function getConfigDir(): string {

@@ -86,4 +86,5 @@ export async function configShowCommand(): Promise<void> {
   console.log(`Access Token:        ${config.accessToken ? mask(config.accessToken) : "(not set)"}`);
   console.log(`Access Token Secret: ${config.accessTokenSecret ? mask(config.accessTokenSecret) : "(not set)"}`);
   console.log(`Cache Dir:           ${config.cacheDir ?? "(default: ~/.config/xp/cache)"}`);
+  console.log(`User ID:             ${config.userId ? `${config.userId} (cached)` : "(not cached)"}`);
 }

@@ -1,5 +1,5 @@
 import { buildAuthHeader } from "../lib/oauth.ts";
-import { deleteConfig, loadPartialConfig, mergeConfig } from "../lib/config-store.ts";
+import { deleteConfig, loadPartialConfig, mergeConfig, unsetConfigKeys } from "../lib/config-store.ts";
 
 const REQUEST_TOKEN_URL = "https://api.twitter.com/oauth/request_token";
 const AUTHORIZE_URL = "https://api.twitter.com/oauth/authorize";
@@ -139,6 +139,8 @@ export async function authLoginCommand(): Promise<void> {
     accessToken,
     accessTokenSecret,
   });
+  // Clear cached userId in case the user logged in with a different account
+  await unsetConfigKeys(["userId"]);
 
   console.log(`\nAuthenticated as @${screenName ?? "unknown"}`);
   console.log("Credentials saved to ~/.config/xp/config.json");

@@ -1,5 +1,5 @@
 import { buildAuthHeader } from "./oauth.ts";
-import { loadConfig } from "./config-store.ts";
+import { loadConfig, loadPartialConfig, mergeConfig } from "./config-store.ts";
 
 const BASE_URL = "https://api.x.com/2";
 
@@ -100,6 +100,9 @@ export interface GetMyTweetsOptions {
 }
 
 export async function getMyUserId(): Promise<string> {
+  const partial = await loadPartialConfig();
+  if (partial.userId) return partial.userId;
+
   const config = await loadConfig();
   const meUrl = `${BASE_URL}/users/me`;
   const meAuthHeader = await buildAuthHeader("GET", meUrl, config);
@@ -112,7 +115,10 @@ export async function getMyUserId(): Promise<string> {
   if (!meJson.data) {
     throw new Error("Failed to retrieve authenticated user");
   }
-  return meJson.data.id;
+  const userId: string = meJson.data.id;
+
+  await mergeConfig({ userId });
+  return userId;
 }
 
 async function paginatedTweetFetch(

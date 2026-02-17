@@ -50,6 +50,17 @@ export async function authLoginCommand(): Promise<void> {
 
   if (!requestRes.ok) {
     const body = await requestRes.text();
+    if (requestRes.status === 401 || requestRes.status === 403) {
+      throw new Error(
+        "Failed to start authentication. Ensure your app has OAuth 1.0a enabled:\n" +
+        '  1. Go to your app\'s Settings in the Developer Portal\n' +
+        '  2. Under "User authentication settings", click "Set up"\n' +
+        "  3. Enable OAuth 1.0a with Read and Write permissions\n" +
+        "  4. Set Callback URI to https://example.com (placeholder)\n" +
+        "  5. Set Website URL to any URL\n" +
+        "  See: https://developer.x.com/en/portal/dashboard",
+      );
+    }
     throw new Error(`Failed to get request token (${requestRes.status}): ${body}`);
   }
 

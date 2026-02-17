@@ -89,8 +89,13 @@ xp completions zsh > "${fpath[1]}/_xp" && compinit
 
 1. Go to [Developer Portal](https://developer.x.com/en/portal/dashboard)
 2. Create a new app ([Pay-Per-Use](https://docs.x.com/x-api/getting-started/pricing) recommended — pay only for what you use)
-3. Set App permissions to **Read and Write**
-4. Copy your **API Key** and **API Secret**
+3. In your app's **Settings**, click **Set up** under "User authentication settings"
+   - Enable **OAuth 1.0a**
+   - App permissions: **Read and Write**
+   - Type of App: **Web App, Automated App or Bot**
+   - Callback URI: `https://example.com` (placeholder — not actually used)
+   - Website URL: any URL (e.g. `https://example.com`)
+4. Go to **Keys and tokens** and copy your **API Key** and **API Secret**
 
 ### 2. Authenticate
 

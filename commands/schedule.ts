@@ -11,6 +11,8 @@ import {
   updateScheduleStatus,
   removeSchedule,
   clearSchedules,
+  acquireScheduleLock,
+  releaseScheduleLock,
   type ScheduledTweet,
 } from "../lib/schedule-store.ts";
 import {
@@ -137,6 +139,15 @@ export async function scheduleClearCommand(all: boolean, json: boolean): Promise
 }
 
 export async function scheduleRunCommand(json: boolean): Promise<void> {
+  await acquireScheduleLock();
+  try {
+    await _scheduleRunInner(json);
+  } finally {
+    await releaseScheduleLock();
+  }
+}
+
+async function _scheduleRunInner(json: boolean): Promise<void> {
   const due = await getDueSchedules();
   if (due.length === 0) {
     if (json) {

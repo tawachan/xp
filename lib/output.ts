@@ -206,12 +206,21 @@ export interface ScheduleRunResultOutput {
 
 export function formatScheduleRunResult(result: ScheduleRunResultOutput, json = false): string {
   if (json) {
-    return JSON.stringify(result);
+    return JSON.stringify({
+      posted: result.posted,
+      failed: result.failed,
+      results: result.results.map((r) => {
+        const obj: Record<string, unknown> = { id: r.id, status: r.status };
+        if (r.tweetIds) obj.tweet_ids = r.tweetIds;
+        if (r.error) obj.error = r.error;
+        return obj;
+      }),
+    });
   }
   const lines: string[] = [];
   for (const r of result.results) {
     if (r.status === "posted") {
-      lines.push(`posted: ${r.id} -> ${r.tweetIds!.join(", ")}`);
+      lines.push(`posted: ${r.id} -> ${r.tweetIds?.join(", ") ?? ""}`);
     } else {
       lines.push(`failed: ${r.id} -> ${r.error}`);
     }

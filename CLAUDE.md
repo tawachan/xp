@@ -170,8 +170,8 @@ status: pending
 ### Show a scheduled tweet
 
 ```bash
-xp schedule show <id>                      # full UUID or unique prefix
-xp schedule show a1b2c3d4                  # 8-char prefix
+xp schedule show <id>                      # full UUID or any unique prefix
+xp schedule show a1b2c3d4                  # prefix match
 ```
 
 ### Remove a scheduled tweet
@@ -343,7 +343,7 @@ xp upgrade
 - Use `xp cache list --json` to get all cached tweets programmatically
 - Use `xp config set --cache-dir=~/project/cache` to store cache in a custom directory (e.g. for Git versioning)
 - Use `xp schedule add` + `xp schedule run` for scheduled posting from cron/CI
-- Schedule IDs can be abbreviated to a unique prefix (e.g. first 8 chars)
+- Schedule IDs can be abbreviated to any unique prefix
 - Schedule data is stored at `~/.config/xp/schedule/schedules.json` by default
 - Use `xp config set --schedule-dir=PATH` to customize schedule storage location
 

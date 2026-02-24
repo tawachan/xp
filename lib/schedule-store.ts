@@ -40,11 +40,17 @@ async function getSchedulePath(): Promise<string> {
 }
 
 async function loadSchedules(): Promise<ScheduledTweet[]> {
+  const path = await getSchedulePath();
   try {
-    const text = await Deno.readTextFile(await getSchedulePath());
+    const text = await Deno.readTextFile(path);
     return JSON.parse(text) as ScheduledTweet[];
-  } catch {
-    return [];
+  } catch (e) {
+    if (e instanceof Deno.errors.NotFound) {
+      return [];
+    }
+    throw new Error(
+      `Failed to load schedules from "${path}": ${e instanceof Error ? e.message : String(e)}`,
+    );
   }
 }
 
@@ -52,6 +58,31 @@ async function saveSchedules(schedules: ScheduledTweet[]): Promise<void> {
   const dir = await getScheduleDir();
   await Deno.mkdir(dir, { recursive: true });
   await Deno.writeTextFile(await getSchedulePath(), JSON.stringify(schedules, null, 2));
+}
+
+export async function acquireScheduleLock(): Promise<void> {
+  const dir = await getScheduleDir();
+  await Deno.mkdir(dir, { recursive: true });
+  const lockPath = `${dir}/schedules.lock`;
+  try {
+    const file = await Deno.open(lockPath, { write: true, createNew: true });
+    file.close();
+  } catch (e) {
+    if (e instanceof Deno.errors.AlreadyExists) {
+      throw new Error("Another xp schedule process is running. If this is a stale lock, remove " + lockPath);
+    }
+    throw e;
+  }
+}
+
+export async function releaseScheduleLock(): Promise<void> {
+  const dir = await getScheduleDir();
+  const lockPath = `${dir}/schedules.lock`;
+  try {
+    await Deno.remove(lockPath);
+  } catch {
+    // best-effort cleanup
+  }
 }
 
 export async function addSchedule(schedule: ScheduledTweet): Promise<void> {

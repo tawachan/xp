@@ -148,9 +148,17 @@ async function main(): Promise<void> {
     throw new Error(`--image is not supported for the "${command}" command`);
   }
 
-  // --at is only supported for schedule add
-  if (atValue && command !== "schedule") {
-    throw new Error(`--at is not supported for the "${command}" command`);
+  // --at is only supported for `xp schedule add`
+  if (atValue) {
+    const isScheduleAdd = command === "schedule" && args[1] === "add";
+    if (!isScheduleAdd) {
+      throw new Error(`--at is only supported for "xp schedule add"`);
+    }
+  }
+
+  // --image on schedule is only valid for add
+  if (imagePaths.length > 0 && command === "schedule" && args[1] !== "add") {
+    throw new Error(`--image is only supported for "xp schedule add"`);
   }
 
   switch (command) {
@@ -283,7 +291,15 @@ async function main(): Promise<void> {
       } else if (sub === "run") {
         await scheduleRunCommand(jsonFlag);
       } else if (sub === "clear") {
-        const allFlag = args.includes("--all");
+        const clearArgs = args.slice(2);
+        let allFlag = false;
+        for (const arg of clearArgs) {
+          if (arg === "--all") {
+            allFlag = true;
+          } else {
+            throw new Error(`Unknown argument: ${arg}\nUsage: xp schedule clear [--all]`);
+          }
+        }
         await scheduleClearCommand(allFlag, jsonFlag);
       } else {
         throw new Error("Usage: xp schedule add|list|show|remove|run|clear");

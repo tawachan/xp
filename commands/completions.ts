@@ -115,7 +115,11 @@ _xp() {
             COMPREPLY=( $(compgen -W "list show clear" -- "\${cur}") )
             ;;
         list)
-            COMPREPLY=( $(compgen -W "--limit --year --month --json --status" -- "\${cur}") )
+            if [[ "\${COMP_WORDS[1]}" == "schedule" ]]; then
+                COMPREPLY=( $(compgen -W "--status --json" -- "\${cur}") )
+            else
+                COMPREPLY=( $(compgen -W "--limit --year --month --json" -- "\${cur}") )
+            fi
             ;;
         config)
             COMPREPLY=( $(compgen -W "set unset show" -- "\${cur}") )

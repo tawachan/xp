@@ -4,6 +4,7 @@ export interface XpConfig {
   accessToken: string;
   accessTokenSecret: string;
   cacheDir?: string;
+  scheduleDir?: string;
   userId?: string;
 }
 

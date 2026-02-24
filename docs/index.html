@@ -188,6 +188,12 @@
             <p class="text-sm text-muted"><code class="text-accent text-xs bg-bg px-1.5 py-0.5 rounded">--image photo.jpg</code> — attach up to 4 images (JPG/PNG/GIF/WebP).</p>
           </div>
 
+          <div class="group bg-bg-card border border-border rounded-lg p-6 hover:border-accent/40 transition-colors">
+            <div class="text-2xl mb-3">&#128197;</div>
+            <h3 class="text-white font-semibold mb-2">Scheduled tweets</h3>
+            <p class="text-sm text-muted"><code class="text-accent text-xs bg-bg px-1.5 py-0.5 rounded">xp schedule add "text" --at &lt;datetime&gt;</code> — schedule tweets, threads, and replies. Run <code class="text-accent text-xs bg-bg px-1.5 py-0.5 rounded">xp schedule run</code> from cron.</p>
+          </div>
+
         </div>
       </div>
     </section>
@@ -323,6 +329,16 @@
           </div>
 
           <div class="bg-bg-card border border-border rounded-lg p-5 hover:border-border-hover transition-colors">
+            <code class="font-mono text-sm text-accent">xp schedule add "Hello" --at 2026-03-01T10:00:00+09:00</code>
+            <p class="text-sm text-muted mt-1.5">Schedule a tweet for future posting. Supports <code class="text-accent text-xs bg-bg px-1.5 py-0.5 rounded">thread</code>, <code class="text-accent text-xs bg-bg px-1.5 py-0.5 rounded">reply</code>, <code class="text-accent text-xs bg-bg px-1.5 py-0.5 rounded">--image</code>. Run <code class="text-accent text-xs bg-bg px-1.5 py-0.5 rounded">xp schedule run</code> from cron to post due tweets.</p>
+          </div>
+
+          <div class="bg-bg-card border border-border rounded-lg p-5 hover:border-border-hover transition-colors">
+            <code class="font-mono text-sm text-accent">xp schedule list --status pending --json</code>
+            <p class="text-sm text-muted mt-1.5">List scheduled tweets. Also: <code class="text-accent text-xs bg-bg px-1.5 py-0.5 rounded">xp schedule show &lt;id&gt;</code>, <code class="text-accent text-xs bg-bg px-1.5 py-0.5 rounded">xp schedule remove &lt;id&gt;</code>, <code class="text-accent text-xs bg-bg px-1.5 py-0.5 rounded">xp schedule clear</code>.</p>
+          </div>
+
+          <div class="bg-bg-card border border-border rounded-lg p-5 hover:border-border-hover transition-colors">
             <code class="font-mono text-sm text-accent">xp delete 1234567890</code>
             <p class="text-sm text-muted mt-1.5">Delete a tweet by ID.</p>
           </div>
@@ -334,7 +350,7 @@
 
           <div class="bg-bg-card border border-border rounded-lg p-5 hover:border-border-hover transition-colors">
             <code class="font-mono text-sm text-accent">xp config show</code>
-            <p class="text-sm text-muted mt-1.5">Show current config (masked). Use <code class="text-accent text-xs bg-bg px-1.5 py-0.5 rounded">xp config set --cache-dir=PATH</code> to customize cache location, <code class="text-accent text-xs bg-bg px-1.5 py-0.5 rounded">xp config unset --cache-dir</code> to reset.</p>
+            <p class="text-sm text-muted mt-1.5">Show current config (masked). Use <code class="text-accent text-xs bg-bg px-1.5 py-0.5 rounded">--cache-dir</code> / <code class="text-accent text-xs bg-bg px-1.5 py-0.5 rounded">--schedule-dir</code> to customize storage locations.</p>
           </div>
 
           <div class="bg-bg-card border border-border rounded-lg p-5 hover:border-border-hover transition-colors">

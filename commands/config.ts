@@ -4,6 +4,7 @@ export async function configSetCommand(args: string[]): Promise<void> {
   // Parse flags
   const flags: Partial<XpConfig> = {};
   let hasCacheDir = false;
+  let hasScheduleDir = false;
   for (const arg of args) {
     if (arg.startsWith("--api-key=")) {
       flags.apiKey = arg.slice("--api-key=".length);
@@ -20,10 +21,18 @@ export async function configSetCommand(args: string[]): Promise<void> {
       }
       flags.cacheDir = dir;
       hasCacheDir = true;
+    } else if (arg.startsWith("--schedule-dir=")) {
+      const dir = arg.slice("--schedule-dir=".length);
+      if (!dir.startsWith("/") && !dir.startsWith("~")) {
+        throw new Error("--schedule-dir must be an absolute path (starting with / or ~)");
+      }
+      flags.scheduleDir = dir;
+      hasScheduleDir = true;
     }
   }
 
   const hasOAuth = flags.apiKey || flags.apiSecret || flags.accessToken || flags.accessTokenSecret;
+  const hasDirOnly = (hasCacheDir || hasScheduleDir) && !hasOAuth;
 
   if (hasOAuth && flags.apiKey && flags.apiSecret && flags.accessToken && flags.accessTokenSecret) {
     // All OAuth flags provided - non-interactive mode
@@ -40,10 +49,16 @@ export async function configSetCommand(args: string[]): Promise<void> {
       throw new Error("All fields are required");
     }
 
-    await mergeConfig({ apiKey, apiSecret, accessToken, accessTokenSecret, ...hasCacheDir ? { cacheDir: flags.cacheDir } : {} });
-  } else if (hasCacheDir) {
-    // Only --cache-dir provided
-    await mergeConfig({ cacheDir: flags.cacheDir });
+    const dirFlags: Partial<XpConfig> = {};
+    if (hasCacheDir) dirFlags.cacheDir = flags.cacheDir;
+    if (hasScheduleDir) dirFlags.scheduleDir = flags.scheduleDir;
+    await mergeConfig({ apiKey, apiSecret, accessToken, accessTokenSecret, ...dirFlags });
+  } else if (hasDirOnly) {
+    // Only directory flags provided
+    const dirFlags: Partial<XpConfig> = {};
+    if (hasCacheDir) dirFlags.cacheDir = flags.cacheDir;
+    if (hasScheduleDir) dirFlags.scheduleDir = flags.scheduleDir;
+    await mergeConfig(dirFlags);
   } else {
     // No flags - interactive mode
     console.log("Enter your X API credentials (from Developer Portal):\n");
@@ -67,11 +82,13 @@ export async function configUnsetCommand(args: string[]): Promise<void> {
   for (const arg of args) {
     if (arg === "--cache-dir") {
       keys.push("cacheDir");
+    } else if (arg === "--schedule-dir") {
+      keys.push("scheduleDir");
     }
   }
 
   if (keys.length === 0) {
-    throw new Error("Usage: xp config unset --cache-dir");
+    throw new Error("Usage: xp config unset --cache-dir | --schedule-dir");
   }
 
   await unsetConfigKeys(keys);
@@ -86,5 +103,6 @@ export async function configShowCommand(): Promise<void> {
   console.log(`Access Token:        ${config.accessToken ? mask(config.accessToken) : "(not set)"}`);
   console.log(`Access Token Secret: ${config.accessTokenSecret ? mask(config.accessTokenSecret) : "(not set)"}`);
   console.log(`Cache Dir:           ${config.cacheDir ?? "(default: ~/.config/xp/cache)"}`);
+  console.log(`Schedule Dir:        ${config.scheduleDir ?? "(default: ~/.config/xp/schedule)"}`);
   console.log(`User ID:             ${config.userId ? `${config.userId} (cached)` : "(not cached)"}`);
 }

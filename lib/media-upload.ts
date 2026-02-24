@@ -22,7 +22,7 @@ function getMimeType(filePath: string): string {
   return mimeType;
 }
 
-async function validateFile(filePath: string): Promise<void> {
+export async function validateFile(filePath: string): Promise<void> {
   let stat: Deno.FileInfo;
   try {
     stat = await Deno.stat(filePath);

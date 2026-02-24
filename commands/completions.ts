@@ -9,6 +9,7 @@ complete -c xp -n '__fish_use_subcommand' -a get -d 'Fetch a tweet by ID'
 complete -c xp -n '__fish_use_subcommand' -a me -d 'List your recent tweets'
 complete -c xp -n '__fish_use_subcommand' -a mentions -d 'List your mentions'
 complete -c xp -n '__fish_use_subcommand' -a delete -d 'Delete a tweet'
+complete -c xp -n '__fish_use_subcommand' -a schedule -d 'Manage scheduled tweets'
 complete -c xp -n '__fish_use_subcommand' -a cache -d 'Manage tweet cache'
 complete -c xp -n '__fish_use_subcommand' -a auth -d 'Authentication'
 complete -c xp -n '__fish_use_subcommand' -a config -d 'Manage config'
@@ -31,6 +32,26 @@ complete -c xp -n '__fish_seen_subcommand_from mentions' -l limit -d 'Number of 
 complete -c xp -n '__fish_seen_subcommand_from mentions' -l before -d 'Fetch mentions older than this ID'
 complete -c xp -n '__fish_seen_subcommand_from mentions' -l after -d 'Fetch mentions newer than this ID'
 
+# schedule subcommands
+complete -c xp -n '__fish_seen_subcommand_from schedule' -a add -d 'Schedule a tweet'
+complete -c xp -n '__fish_seen_subcommand_from schedule' -a list -d 'List scheduled tweets'
+complete -c xp -n '__fish_seen_subcommand_from schedule' -a show -d 'Show a scheduled tweet'
+complete -c xp -n '__fish_seen_subcommand_from schedule' -a remove -d 'Remove a scheduled tweet'
+complete -c xp -n '__fish_seen_subcommand_from schedule' -a run -d 'Post due scheduled tweets'
+complete -c xp -n '__fish_seen_subcommand_from schedule' -a clear -d 'Clear posted/failed schedules'
+
+# schedule add subcommands
+complete -c xp -n '__fish_seen_subcommand_from schedule; and __fish_seen_subcommand_from add' -a tweet -d 'Schedule a tweet'
+complete -c xp -n '__fish_seen_subcommand_from schedule; and __fish_seen_subcommand_from add' -a thread -d 'Schedule a thread'
+complete -c xp -n '__fish_seen_subcommand_from schedule; and __fish_seen_subcommand_from add' -a reply -d 'Schedule a reply'
+complete -c xp -n '__fish_seen_subcommand_from schedule; and __fish_seen_subcommand_from add' -l at -d 'Schedule time (ISO 8601)'
+
+# schedule list flags
+complete -c xp -n '__fish_seen_subcommand_from schedule; and __fish_seen_subcommand_from list' -l status -d 'Filter by status (pending/posted/failed)'
+
+# schedule clear flags
+complete -c xp -n '__fish_seen_subcommand_from schedule; and __fish_seen_subcommand_from clear' -l all -d 'Clear all schedules'
+
 # cache subcommands
 complete -c xp -n '__fish_seen_subcommand_from cache' -a list -d 'List cached tweets'
 complete -c xp -n '__fish_seen_subcommand_from cache' -a show -d 'Show a cached tweet'
@@ -52,9 +73,11 @@ complete -c xp -n '__fish_seen_subcommand_from set' -l api-secret -d 'API Secret
 complete -c xp -n '__fish_seen_subcommand_from set' -l access-token -d 'Access Token'
 complete -c xp -n '__fish_seen_subcommand_from set' -l access-token-secret -d 'Access Token Secret'
 complete -c xp -n '__fish_seen_subcommand_from set' -l cache-dir -d 'Custom cache directory'
+complete -c xp -n '__fish_seen_subcommand_from set' -l schedule-dir -d 'Custom schedule directory'
 
 # config unset flags
 complete -c xp -n '__fish_seen_subcommand_from unset' -l cache-dir -d 'Reset cache directory to default'
+complete -c xp -n '__fish_seen_subcommand_from unset' -l schedule-dir -d 'Reset schedule directory to default'
 
 # Global flags
 complete -c xp -l json -d 'Output in JSON format'
@@ -70,7 +93,7 @@ _xp() {
     COMPREPLY=()
     cur="\${COMP_WORDS[COMP_CWORD]}"
     prev="\${COMP_WORDS[COMP_CWORD-1]}"
-    commands="tweet thread reply get me mentions delete cache auth config upgrade completions help version"
+    commands="tweet thread reply get me mentions delete schedule cache auth config upgrade completions help version"
 
     case "\${prev}" in
         xp)
@@ -85,11 +108,14 @@ _xp() {
         mentions)
             COMPREPLY=( $(compgen -W "--limit --before --after --json" -- "\${cur}") )
             ;;
+        schedule)
+            COMPREPLY=( $(compgen -W "add list show remove run clear" -- "\${cur}") )
+            ;;
         cache)
             COMPREPLY=( $(compgen -W "list show clear" -- "\${cur}") )
             ;;
         list)
-            COMPREPLY=( $(compgen -W "--limit --year --month --json" -- "\${cur}") )
+            COMPREPLY=( $(compgen -W "--limit --year --month --json --status" -- "\${cur}") )
             ;;
         config)
             COMPREPLY=( $(compgen -W "set unset show" -- "\${cur}") )
@@ -98,10 +124,13 @@ _xp() {
             COMPREPLY=( $(compgen -W "fish bash zsh" -- "\${cur}") )
             ;;
         set)
-            COMPREPLY=( $(compgen -W "--api-key= --api-secret= --access-token= --access-token-secret= --cache-dir=" -- "\${cur}") )
+            COMPREPLY=( $(compgen -W "--api-key= --api-secret= --access-token= --access-token-secret= --cache-dir= --schedule-dir=" -- "\${cur}") )
             ;;
         unset)
-            COMPREPLY=( $(compgen -W "--cache-dir" -- "\${cur}") )
+            COMPREPLY=( $(compgen -W "--cache-dir --schedule-dir" -- "\${cur}") )
+            ;;
+        add)
+            COMPREPLY=( $(compgen -W "tweet thread reply --at --image --json" -- "\${cur}") )
             ;;
         tweet|thread|reply)
             COMPREPLY=( $(compgen -W "--json --image" -- "\${cur}") )
@@ -130,6 +159,7 @@ _xp() {
         'me:List your recent tweets'
         'mentions:List your mentions'
         'delete:Delete a tweet'
+        'schedule:Manage scheduled tweets'
         'cache:Manage tweet cache'
         'auth:Authentication'
         'config:Manage config'
@@ -159,6 +189,22 @@ _xp() {
                     ;;
                 mentions)
                     _arguments '--limit[Number of mentions to fetch]:count:' '--before[Fetch mentions older than this ID]:tweet_id:' '--after[Fetch mentions newer than this ID]:tweet_id:' '--json[Output in JSON format]'
+                    ;;
+                schedule)
+                    case "\${words[2]}" in
+                        add)
+                            _arguments '--at[Schedule time (ISO 8601)]:datetime:' '*--image[Attach image file]:file:_files -g "*.{jpg,jpeg,png,gif,webp}"' '--json[Output in JSON format]' '1:subtype:(tweet thread reply)'
+                            ;;
+                        list)
+                            _arguments '--status[Filter by status]:status:(pending posted failed)' '--json[Output in JSON format]'
+                            ;;
+                        clear)
+                            _arguments '--all[Clear all schedules]' '--json[Output in JSON format]'
+                            ;;
+                        *)
+                            _values 'subcommand' 'add[Schedule a tweet]' 'list[List scheduled tweets]' 'show[Show a scheduled tweet]' 'remove[Remove a scheduled tweet]' 'run[Post due scheduled tweets]' 'clear[Clear posted/failed schedules]'
+                            ;;
+                    esac
                     ;;
                 cache)
                     case "\${words[2]}" in

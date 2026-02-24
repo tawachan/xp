@@ -184,6 +184,31 @@ All read commands (`get`, `me`, `mentions`) include `author_username` in the out
 
 > Requires a paid API plan (Pay-Per-Use or Basic).
 
+### Schedule tweets
+
+Schedule tweets for future posting. Use cron or CI to run `xp schedule run` periodically.
+
+```bash
+xp schedule add "Scheduled tweet" --at 2026-03-01T10:00:00+09:00
+xp schedule add thread "First" "Second" --at 2026-03-01T10:00:00Z
+xp schedule add reply 1234567890123456789 "Nice!" --at 2026-03-01T10:00
+xp schedule add "Hello" --at 2026-03-01T10:00:00Z --image photo.jpg
+```
+
+`--at` accepts ISO 8601 datetime (e.g. `2026-03-01T10:00`, `2026-03-01T10:00:00+09:00`, `2026-03-01T10:00:00Z`).
+
+```bash
+xp schedule list                           # List all (sorted by scheduled_at)
+xp schedule list --status pending          # Filter by status
+xp schedule show <id>                      # Show details (supports prefix match)
+xp schedule remove <id>                    # Remove a scheduled tweet
+xp schedule run                            # Post all due tweets (scheduledAt <= now)
+xp schedule clear                          # Clear posted/failed entries
+xp schedule clear --all                    # Clear all entries
+```
+
+Schedule data is stored at `~/.config/xp/schedule/schedules.json` by default. Use `xp config set --schedule-dir=PATH` to customize.
+
 ### Delete a tweet
 
 ```bash
@@ -228,7 +253,9 @@ Downloads and installs the latest release from GitHub.
 ```bash
 xp config show                            # Show current config (masked)
 xp config set --cache-dir=~/my-cache      # Set custom cache directory
+xp config set --schedule-dir=~/my-sched   # Set custom schedule directory
 xp config unset --cache-dir               # Reset cache directory to default
+xp config unset --schedule-dir            # Reset schedule directory to default
 xp auth logout                            # Remove saved credentials
 ```
 
@@ -343,6 +370,7 @@ graph TD
     A --> MN[commands/mentions.ts]
     A --> D[commands/delete.ts]
     A --> CA[commands/cache.ts]
+    A --> SC[commands/schedule.ts]
     A --> E[commands/config.ts]
     A --> F[commands/auth.ts]
     A --> U[commands/upgrade.ts]
@@ -377,6 +405,12 @@ graph TD
     D --> CS
     CA --> CS
 
+    SC --> G
+    SC --> MU
+    SC --> CS
+    SC --> SS[lib/schedule-store.ts<br/>Schedule Manager]
+    SS --> I
+
     CS --> I
 
     B --> J[lib/output.ts<br/>Output Formatter<br/>text / JSON]
@@ -387,9 +421,11 @@ graph TD
     MN --> J
     D --> J
     CA --> J
+    SC --> J
 
     I --> K[(~/.config/xp/config.json)]
     CS --> KCS[(cache/tweets.json<br/>configurable via --cache-dir)]
+    SS --> KSS[(schedule/schedules.json<br/>configurable via --schedule-dir)]
     H --> L[WebCrypto API<br/>HMAC-SHA1]
     U --> GH[GitHub Releases API]
 ```
@@ -402,6 +438,7 @@ graph TD
 - **Distribution**: Single binary via `deno compile`
 - **Config**: `~/.config/xp/config.json` (permissions `0600`)
 - **Cache**: `~/.config/xp/cache/tweets.json` (customizable via `--cache-dir`)
+- **Schedule**: `~/.config/xp/schedule/schedules.json` (customizable via `--schedule-dir`)
 
 ## Development
 

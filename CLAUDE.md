@@ -125,6 +125,90 @@ url: https://x.com/i/status/1234567890123456789
 ...
 ```
 
+### Schedule a tweet
+
+```bash
+xp schedule add "Scheduled tweet" --at 2026-03-01T10:00:00+09:00
+xp schedule add tweet "Hello" --at 2026-03-01T10:00:00Z         # explicit type
+xp schedule add thread "First" "Second" --at 2026-03-01T10:00   # thread
+xp schedule add reply 1234567890123456789 "Nice!" --at 2026-03-01T10:00:00+09:00
+xp schedule add "Hello" --at 2026-03-01T10:00:00Z --image photo.jpg  # with image
+```
+
+Output:
+```text
+id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+type: tweet
+text: Scheduled tweet
+scheduled_at: 2026-03-01T01:00:00.000Z
+created_at: 2026-02-24T10:00:00.000Z
+status: pending
+```
+
+### List scheduled tweets
+
+```bash
+xp schedule list                           # all schedules (sorted by scheduled_at)
+xp schedule list --status pending          # filter: pending, posted, failed
+xp schedule list --json
+```
+
+Output:
+```text
+[1/2]
+id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+type: tweet
+text: Scheduled tweet
+scheduled_at: 2026-03-01T01:00:00.000Z
+created_at: 2026-02-24T10:00:00.000Z
+status: pending
+
+[2/2]
+...
+```
+
+### Show a scheduled tweet
+
+```bash
+xp schedule show <id>                      # full UUID or unique prefix
+xp schedule show a1b2c3d4                  # 8-char prefix
+```
+
+### Remove a scheduled tweet
+
+```bash
+xp schedule remove <id>
+xp schedule remove a1b2c3d4
+```
+
+Output: `removed: a1b2c3d4-e5f6-7890-abcd-ef1234567890`
+
+### Run due scheduled tweets
+
+```bash
+xp schedule run                            # post all pending tweets with scheduledAt <= now
+xp schedule run --json
+```
+
+Output:
+```text
+posted: a1b2c3d4-... -> 1234567890123456789
+failed: b2c3d4e5-... -> Authentication failed
+
+total: 1 posted, 1 failed
+```
+
+Exit code 1 if any tweet fails. Intended to be called from cron/CI.
+
+### Clear scheduled tweets
+
+```bash
+xp schedule clear                          # remove posted and failed entries
+xp schedule clear --all                    # remove all (including pending)
+```
+
+Output: `cleared: 3 schedule(s)`
+
 ### Delete a tweet
 
 ```bash
@@ -163,7 +247,9 @@ xp auth logout             # Remove saved credentials
 ```bash
 xp config set --api-key=KEY --api-secret=SECRET --access-token=TOKEN --access-token-secret=TOKEN_SECRET
 xp config set --cache-dir=~/my-cache       # Set custom cache directory (absolute path only)
+xp config set --schedule-dir=~/my-sched   # Set custom schedule directory (absolute path only)
 xp config unset --cache-dir                # Reset cache directory to default
+xp config unset --schedule-dir             # Reset schedule directory to default
 xp config show             # Show current config (masked)
 ```
 
@@ -189,7 +275,12 @@ Common errors:
 - `Unsupported image format` → must be JPG, PNG, GIF, or WebP
 - `Too many images` → max 4 images per tweet
 - `--cache-dir must be an absolute path` → relative paths are not allowed
+- `--schedule-dir must be an absolute path` → relative paths are not allowed
 - `--month requires --year` → `--month` cannot be used without `--year`
+- `Scheduled time must be in the future` → --at must be a future datetime
+- `Invalid datetime` → --at must be valid ISO 8601
+- `Schedule not found` → invalid schedule ID or prefix
+- `Ambiguous ID prefix` → prefix matches multiple schedules, use more characters
 
 ### JSON output
 
@@ -219,6 +310,14 @@ xp mentions --json
 [{"tweet_id":"123","author_id":"456","author_username":"johndoe","text":"@you Hello!","created_at":"2024-01-15T10:30:00.000Z","url":"https://x.com/i/status/123"}]
 ```
 
+```bash
+xp schedule list --json
+```
+
+```json
+[{"id":"a1b2c3d4-...","type":"tweet","texts":["Hello"],"scheduled_at":"2026-03-01T01:00:00.000Z","created_at":"2026-02-24T10:00:00.000Z","status":"pending"}]
+```
+
 Errors with `--json` also output JSON to stderr:
 
 ```json
@@ -243,6 +342,10 @@ xp upgrade
 - `xp get` uses cache first, avoiding paid API calls for previously fetched tweets
 - Use `xp cache list --json` to get all cached tweets programmatically
 - Use `xp config set --cache-dir=~/project/cache` to store cache in a custom directory (e.g. for Git versioning)
+- Use `xp schedule add` + `xp schedule run` for scheduled posting from cron/CI
+- Schedule IDs can be abbreviated to a unique prefix (e.g. first 8 chars)
+- Schedule data is stored at `~/.config/xp/schedule/schedules.json` by default
+- Use `xp config set --schedule-dir=PATH` to customize schedule storage location
 
 ## Development
 
@@ -255,12 +358,13 @@ deno task compile        # Compile to binary
 ## Project Structure
 
 - `main.ts` - Entry point, command routing
-- `commands/` - Command implementations (tweet, thread, reply, get, me, mentions, delete, cache, config, auth, upgrade, completions)
+- `commands/` - Command implementations (tweet, thread, reply, get, me, mentions, delete, schedule, cache, config, auth, upgrade, completions)
 - `lib/oauth.ts` - OAuth 1.0a signatures (WebCrypto API, zero npm deps)
 - `lib/x-client.ts` - X API v2 HTTP client
 - `lib/media-upload.ts` - Image upload for tweets (X API v2 media upload)
 - `lib/config-store.ts` - Config file management (~/.config/xp/config.json)
 - `lib/cache-store.ts` - Tweet cache management (~/.config/xp/cache/tweets.json)
+- `lib/schedule-store.ts` - Schedule management (~/.config/xp/schedule/schedules.json)
 - `lib/output.ts` - Machine-readable output formatting
 
 ## Rules

@@ -10,6 +10,14 @@ import { authLoginCommand, authLogoutCommand } from "./commands/auth.ts";
 import { completionsCommand } from "./commands/completions.ts";
 import { upgradeCommand } from "./commands/upgrade.ts";
 import { cacheListCommand, cacheShowCommand, cacheClearCommand } from "./commands/cache.ts";
+import {
+  scheduleAddCommand,
+  scheduleListCommand,
+  scheduleShowCommand,
+  scheduleRemoveCommand,
+  scheduleClearCommand,
+  scheduleRunCommand,
+} from "./commands/schedule.ts";
 import { formatError } from "./lib/output.ts";
 import denoConfig from "./deno.json" with { type: "json" };
 
@@ -30,6 +38,14 @@ Usage:
   xp mentions --before <tweet_id>    Fetch mentions older than the given ID
   xp mentions --after <tweet_id>     Fetch mentions newer than the given ID
   xp delete <tweet_id>               Delete a tweet
+  xp schedule add <text> --at <dt>    Schedule a tweet
+  xp schedule add thread ... --at    Schedule a thread
+  xp schedule add reply <id> <text> --at  Schedule a reply
+  xp schedule list [--status S]      List scheduled tweets
+  xp schedule show <id>              Show a scheduled tweet
+  xp schedule remove <id>            Remove a scheduled tweet
+  xp schedule run                    Post all due scheduled tweets
+  xp schedule clear [--all]          Clear posted/failed (--all for all)
   xp cache list [flags]              List cached tweets
   xp cache show <tweet_id>           Show a cached tweet
   xp cache clear                     Clear all cached tweets
@@ -46,6 +62,10 @@ Usage:
 Flags:
   --json                             Output in JSON format
   --image <path>                     Attach image (max 4, JPG/PNG/GIF/WebP, 5MB each)
+  --at <datetime>                    Schedule time (ISO 8601, for schedule add)
+
+Schedule list flags:
+  --status <pending|posted|failed>   Filter by status
 
 Cache list flags:
   --limit N                          Show first N cached tweets
@@ -58,6 +78,7 @@ Config flags (for config set):
   --access-token=VALUE
   --access-token-secret=VALUE
   --cache-dir=PATH                   Custom cache directory
+  --schedule-dir=PATH                Custom schedule directory
 
 Setup:
   xp auth login
@@ -83,6 +104,10 @@ Examples:
   xp tweet "Hello" --image a.jpg --image b.jpg
   xp reply 1234567890123456789 "Nice!" --image reaction.png
   xp thread "First" "Second" --image cover.jpg
+  xp schedule add "Scheduled tweet" --at 2026-03-01T10:00:00+09:00
+  xp schedule add thread "1" "2" --at 2026-03-01T10:00:00Z
+  xp schedule list --status pending
+  xp schedule run --json
 `;
 
 async function main(): Promise<void> {
@@ -90,6 +115,7 @@ async function main(): Promise<void> {
 
   // Extract --image flags and their values
   const imagePaths: string[] = [];
+  let atValue: string | undefined;
   const filteredArgs: string[] = [];
   const rawArgs = Deno.args.filter((a) => a !== "--json");
   for (let i = 0; i < rawArgs.length; i++) {
@@ -97,6 +123,9 @@ async function main(): Promise<void> {
       const path = rawArgs[++i];
       if (!path) throw new Error("--image requires a file path");
       imagePaths.push(path);
+    } else if (rawArgs[i] === "--at") {
+      atValue = rawArgs[++i];
+      if (!atValue) throw new Error("--at requires a datetime value");
     } else {
       filteredArgs.push(rawArgs[i]!);
     }
@@ -110,13 +139,18 @@ async function main(): Promise<void> {
 
   const command = args[0]!;
 
-  // --image is only supported for tweet, thread, reply, and default (shorthand tweet)
+  // --image is only supported for tweet, thread, reply, schedule add, and default (shorthand tweet)
   const NON_IMAGE_COMMANDS = new Set([
     "help", "--help", "-h", "version", "--version", "-v",
     "get", "me", "mentions", "delete", "cache", "auth", "config", "upgrade", "completions",
   ]);
   if (imagePaths.length > 0 && NON_IMAGE_COMMANDS.has(command)) {
     throw new Error(`--image is not supported for the "${command}" command`);
+  }
+
+  // --at is only supported for schedule add
+  if (atValue && command !== "schedule") {
+    throw new Error(`--at is not supported for the "${command}" command`);
   }
 
   switch (command) {
@@ -212,6 +246,50 @@ async function main(): Promise<void> {
       }
       await deleteCommand(args[1], jsonFlag);
       break;
+
+    case "schedule": {
+      const sub = args[1];
+      if (sub === "add") {
+        if (!atValue) {
+          throw new Error("--at is required: xp schedule add <text> --at <datetime>");
+        }
+        const addArgs = args.slice(2);
+        if (addArgs.length === 0) {
+          throw new Error("Text is required: xp schedule add <text> --at <datetime>");
+        }
+        await scheduleAddCommand(addArgs, atValue, jsonFlag, imagePaths.length ? imagePaths : undefined);
+      } else if (sub === "list") {
+        const scheduleListArgs = args.slice(2);
+        let statusFilter: string | undefined;
+        for (let i = 0; i < scheduleListArgs.length; i++) {
+          if (scheduleListArgs[i] === "--status") {
+            statusFilter = scheduleListArgs[++i];
+            if (!statusFilter) throw new Error("Status is required: xp schedule list --status <pending|posted|failed>");
+          } else {
+            throw new Error(`Unknown argument: ${scheduleListArgs[i]}\nUsage: xp schedule list [--status pending|posted|failed]`);
+          }
+        }
+        await scheduleListCommand({ status: statusFilter, json: jsonFlag });
+      } else if (sub === "show") {
+        if (!args[2]) {
+          throw new Error("Schedule ID is required: xp schedule show <id>");
+        }
+        await scheduleShowCommand(args[2], jsonFlag);
+      } else if (sub === "remove") {
+        if (!args[2]) {
+          throw new Error("Schedule ID is required: xp schedule remove <id>");
+        }
+        await scheduleRemoveCommand(args[2], jsonFlag);
+      } else if (sub === "run") {
+        await scheduleRunCommand(jsonFlag);
+      } else if (sub === "clear") {
+        const allFlag = args.includes("--all");
+        await scheduleClearCommand(allFlag, jsonFlag);
+      } else {
+        throw new Error("Usage: xp schedule add|list|show|remove|run|clear");
+      }
+      break;
+    }
 
     case "cache":
       if (args[1] === "show") {

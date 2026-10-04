@@ -234,6 +234,10 @@ xp upgrade
 ### Tips for agents
 
 - Use `--json` for reliable parsing (recommended over text format)
+- `xp get`, `xp me`, and `xp mentions` call the paid X API (Pay-Per-Use) on every cache miss. Ask the user before running them
+- Check `xp cache list` first. It is free and local, and it is enough for most lookups of past tweets
+- Before a second paid call, confirm that the first call already covered the range you need
+- Posting (`tweet`, `thread`, `reply`, `delete`) is not billed
 - Always check exit code (0 = success, 1 = error)
 - Parse `tweet_id` from JSON output to reference posted tweets
 - Use `xp delete <tweet_id>` to clean up test tweets
